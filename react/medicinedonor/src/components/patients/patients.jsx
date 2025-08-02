@@ -1,40 +1,48 @@
-import { useState } from 'react';
-import { loginPatient, registerPatient } from '../../api'; 
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { loginSuccess } from '../../store/authSlice';
-
+import { loginPatient, registerPatient } from '../../api';
 
 function PatientAuth() {
+const auth = useSelector((state) => state.auth || {});
+
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
   const [isLogin, setIsLogin] = useState(true);
-  const [form, setForm] = useState({
-    name: '',
-    email: '',
-    password: '',
-  });
+  const [form, setForm] = useState({ name: '', email: '', password: '' });
+
+  useEffect(() => {
+   if (auth?.isAuthenticated) {
+  navigate('/PatientDetails');
+}
+
+  }, [auth.isAuthenticated, navigate]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-const dispatch = useDispatch();
-
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    if (isLogin) {
-      const res = await loginPatient(form.email, form.password);
-      dispatch(loginSuccess({ user: res.user, token: res.token }));
-      alert('Login successful!');
-    } else {
-       await registerPatient(form.name, form.email, form.password);
-      alert('Registration successful!');
-      setIsLogin(true);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (isLogin) {
+        const res = await loginPatient(form.email, form.password);
+        dispatch(loginSuccess({ user: res.user, token: res.token }));
+        alert('Login successful!');
+        navigate('/PatientDetails');
+      } else {
+        await registerPatient(form.name, form.email, form.password);
+        alert('Registration successful!');
+        setIsLogin(true);
+      }
+    } catch (err) {
+      alert('Error occurred');
+      console.error(err);
     }
-  } catch (err) {
-    alert('Error occurred');
-    console.error(err);
-  }
-};
+  };
 
   return (
     <div style={{ textAlign: 'center', padding: '2rem' }}>
@@ -78,7 +86,13 @@ const handleSubmit = async (e) => {
 
       <button
         onClick={() => setIsLogin(!isLogin)}
-        style={{ marginTop: '20px', backgroundColor: 'transparent', border: 'none', color: 'blue', cursor: 'pointer' }}
+        style={{
+          marginTop: '20px',
+          backgroundColor: 'transparent',
+          border: 'none',
+          color: 'blue',
+          cursor: 'pointer',
+        }}
       >
         {isLogin ? 'Need to register?' : 'Already registered? Login'}
       </button>
