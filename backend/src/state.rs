@@ -16,7 +16,7 @@ impl Config {
     pub fn from_env() -> Self {
         Self {
             mongodb_uri: std::env::var("MONGODB_URI").expect("MONGODB_URI not set"),
-            database_name: std::env::var("DATABASE_NAME").unwrap_or("test_db".into()),
+            database_name: std::env::var("DATABASE_NAME").unwrap_or_else(|_| "med_app".into()),
         }
     }
 }

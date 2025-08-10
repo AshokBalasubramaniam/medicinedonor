@@ -1,24 +1,58 @@
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { loginSuccess } from '../../store/authSlice';
-import { loginPatient, registerPatient } from '../../api';
+import { loginPatient } from '../../api';
 
 function PatientAuth() {
-const auth = useSelector((state) => state.auth || {});
-
+  const styles = {
+    container: {
+      minHeight: '100vh',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      background: 'linear-gradient(135deg, #00bfff, #1e90ff)',
+    },
+    card: {
+      background: 'white',
+      padding: '2rem',
+      borderRadius: '10px',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+      textAlign: 'center',
+      width: '350px',
+    },
+    heading: {
+      marginBottom: '1.5rem',
+      color: '#1e90ff',
+    },
+    input: {
+      width: '100%',
+      padding: '10px',
+      margin: '10px 0',
+      border: '1px solid #ccc',
+      borderRadius: '6px',
+    },
+    button: {
+      width: '100%',
+      padding: '10px',
+      background: '#1e90ff',
+      color: 'white',
+      border: 'none',
+      borderRadius: '6px',
+      cursor: 'pointer',
+      fontSize: '1rem',
+    },
+  };
+  const auth = useSelector((state) => state.auth || {});
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const [isLogin, setIsLogin] = useState(true);
-  const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [form, setForm] = useState({ email: '', password: '' });
 
   useEffect(() => {
-   if (auth?.isAuthenticated) {
-  navigate('/PatientDetails');
-}
-
+    if (auth?.isAuthenticated) {
+      navigate('/PatientDetails');
+    }
   }, [auth.isAuthenticated, navigate]);
 
   const handleChange = (e) => {
@@ -28,74 +62,52 @@ const auth = useSelector((state) => state.auth || {});
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (isLogin) {
-        const res = await loginPatient(form.email, form.password);
+      const res = await loginPatient(form.email, form.password);
+      // If backend returned an error object, loginPatient would have rejected.
+      // On success, res should be { user, token }
+      if (res?.token && res?.user) {
         dispatch(loginSuccess({ user: res.user, token: res.token }));
         alert('Login successful!');
         navigate('/PatientDetails');
       } else {
-        await registerPatient(form.name, form.email, form.password);
-        alert('Registration successful!');
-        setIsLogin(true);
+        // Unexpected response shape
+        alert('Login failed: invalid server response');
+        console.error('Unexpected login response:', res);
       }
     } catch (err) {
-      alert('Error occurred');
-      console.error(err);
+      // err is normalized by axios interceptor: { error: "Invalid credentials" } or similar
+      alert(err.error || 'Login failed. Please check your email and password.');
+      console.error('Login error:', err);
     }
   };
-
   return (
-    <div style={{ textAlign: 'center', padding: '2rem' }}>
-      <h2>{isLogin ? 'Patient Login' : 'Patient Registration'}</h2>
-      <form onSubmit={handleSubmit}>
-        {!isLogin && (
-          <>
-            <input
-              type="text"
-              name="name"
-              placeholder="Name"
-              onChange={handleChange}
-              value={form.name}
-              required
-            />
-            <br />
-          </>
-        )}
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          onChange={handleChange}
-          value={form.email}
-          required
-        />
-        <br />
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          onChange={handleChange}
-          value={form.password}
-          required
-        />
-        <br />
-        <button type="submit" style={{ marginTop: '10px' }}>
-          {isLogin ? 'Login' : 'Register'}
-        </button>
-      </form>
-
-      <button
-        onClick={() => setIsLogin(!isLogin)}
-        style={{
-          marginTop: '20px',
-          backgroundColor: 'transparent',
-          border: 'none',
-          color: 'blue',
-          cursor: 'pointer',
-        }}
-      >
-        {isLogin ? 'Need to register?' : 'Already registered? Login'}
-      </button>
+    <div style={styles.container}>
+      <div style={styles.card}>
+        <h2 style={styles.heading}>Patient Login</h2>
+        <form onSubmit={handleSubmit}>
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            onChange={handleChange}
+            value={form.email}
+            style={styles.input}
+            required
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            onChange={handleChange}
+            value={form.password}
+            style={styles.input}
+            required
+          />
+          <button type="submit" style={styles.button}>
+            Login
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
