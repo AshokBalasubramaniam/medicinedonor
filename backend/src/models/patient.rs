@@ -18,7 +18,9 @@ pub struct Patient {
     pub email: String,
     pub password: String,
     pub created_at: DateTime,
-    pub approved: bool
+     #[serde(default)] 
+    pub approved: bool,
+    pub image: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -34,6 +36,7 @@ pub struct PatientRegisterInput {
     pub mobile: String,
     pub email: String,
     pub password: String,
+    
 }
 
 

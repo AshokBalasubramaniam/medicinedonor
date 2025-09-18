@@ -1,70 +1,92 @@
-// src/components/admin/AdminLogin.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { adminLogin} from '../../api';
+import { useSelector, useDispatch } from 'react-redux';
+import { adminLogin } from '../../api';
+import { loginSuccess } from '../../store/authSlice';
+
 function AdminLogin() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const auth = useSelector((state) => state.auth || {});
 
   const styles = {
     container: {
       display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
       alignItems: 'center',
+      justifyContent: 'center',
       height: '100vh',
-      backgroundColor: '#f0f2f5',
-      fontFamily: 'Arial, sans-serif',
+      background: 'linear-gradient(135deg,#eef2ff,#fff7ed)',
+      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     },
     box: {
+      width: 360,
+      padding: 28,
+      borderRadius: 12,
+      boxShadow: '0 12px 30px rgba(16,24,40,0.12)',
       background: '#fff',
-      padding: '40px',
-      borderRadius: '10px',
-      boxShadow: '0 0 10px rgba(0,0,0,0.1)',
-      width: '300px',
     },
     title: {
-      fontSize: '24px',
-      marginBottom: '20px',
-      textAlign: 'center',
-      color: '#333',
+      fontSize: 22,
+      marginBottom: 12,
+      fontWeight: 700,
+      color: '#0f172a',
     },
     input: {
       width: '100%',
-      padding: '10px',
-      marginBottom: '15px',
-      borderRadius: '5px',
-      border: '1px solid #ccc',
-      fontSize: '16px',
+      padding: '10px 12px',
+      marginBottom: 12,
+      borderRadius: 8,
+      border: '1px solid #e5e7eb',
+      fontSize: 15,
+      outlineColor: '#0ea5a4',
     },
     button: {
       width: '100%',
-      padding: '10px',
-      borderRadius: '5px',
+      padding: 10,
+      borderRadius: 8,
       border: 'none',
-      backgroundColor: '#007bff',
-      color: 'white',
-      fontSize: '16px',
+      background: '#0ea5a4',
+      color: '#fff',
+      fontWeight: 700,
       cursor: 'pointer',
+      marginTop: 5,
     },
-    error: {
-      color: 'red',
-      fontSize: '14px',
-      marginBottom: '10px',
-      textAlign: 'center',
-    },
+    error: { color: '#ef4444', marginBottom: 8, fontSize: 14 },
   };
 
-  const handleLogin = async () => {
+  // useEffect(() => {
+  //   if (auth?.isAuthenticated) {
+  //     navigate('/Adminpage');
+  //     console.log('Already authenticated, redirecting to /Adminpage');
+  //   }
+  // }, [auth.isAuthenticated, navigate]);
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError('');
     try {
-      const res = await adminLogin ( email, password );
-      if (res.status === 200) {
-        navigate('/adminpage');
+      const res = await adminLogin(form.email, form.password);
+      if (res?.token && res?.user) {
+        dispatch(loginSuccess({ user: res.user, token: res.token }));{
+    
+        alert('Admin login successful!');
+        navigate('/Dashboard');
+        }
+      } else {
+        alert('Login failed: invalid server response');
+        setError('Invalid server response');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      setError(
+        err.response?.data?.message || 'Login failed. Please try again.'
+      );
+      console.error('Admin login error:', err);
     }
   };
 
@@ -73,23 +95,32 @@ function AdminLogin() {
       <div style={styles.box}>
         <div style={styles.title}>Admin Login</div>
         {error && <div style={styles.error}>{error}</div>}
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          style={styles.input}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={styles.input}
-        />
-        <button onClick={handleLogin} style={styles.button}>
-          Login
-        </button>
+        <form onSubmit={handleLogin}>
+          <input
+            style={styles.input}
+            type="email"
+            name="email"
+            value={form.email}
+            onChange={handleChange}
+            placeholder="Email"
+            required
+          />
+          <input
+            style={styles.input}
+            type="password"
+            name="password"
+            value={form.password}
+            onChange={handleChange}
+            placeholder="Password"
+            required
+          />
+          <button type="submit" style={styles.button}>
+            Login
+          </button>
+        </form>
+        <div style={{ marginTop: 10, fontSize: 14 }}>
+          <a href="/forgetpassword">Forgot password?</a>
+        </div>
       </div>
     </div>
   );

@@ -15,6 +15,7 @@ pub struct Donor {
     pub email: String,
     pub password: String,
     pub created_at: DateTime,
+    pub image: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -27,4 +28,5 @@ pub struct DonorRegisterInput {
     pub birthday: String,
     pub email: String,
     pub password: String,
+    pub image: Option<String>,
 }

@@ -28,18 +28,13 @@ const authSlice = createSlice({
       state.user = action.payload.user;
       state.token = action.payload.token;
 
-      // 🍪 Set cookies that expire in 2 minutes
-      const expiresIn2Min = new Date(new Date().getTime() + 2 * 60 * 1000); // 2 min
-
-      Cookies.set('user', JSON.stringify(action.payload.user), { expires: expiresIn2Min });
-      Cookies.set('token', action.payload.token, { expires: expiresIn2Min });
+      Cookies.set('user', JSON.stringify(action.payload.user), { expires: 1 }); // 1 day
+      Cookies.set('token', action.payload.token, { expires: 1 }); // 1 day
     },
     logout: (state) => {
       state.isAuthenticated = false;
       state.user = null;
       state.token = null;
-
-      // 🍪 Clear cookies
       Cookies.remove('user');
       Cookies.remove('token');
     },

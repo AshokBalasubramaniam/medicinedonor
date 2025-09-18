@@ -1,12 +1,14 @@
 use axum::{
     extract::{Json, State},
     http::StatusCode,
-    routing::{get, post},
+    routing::{get, post,put},
     Router,
 };
 use mongodb::bson::doc;
 use serde_json::json;
 
+use crate::routes::pateind_dataget::get_patient_details;
+use crate::routes::update_patient::update_patient_handler;
 use crate::{
     models::donor::Donor,
     models::patient::{Patient, PatientLogin, PatientRegisterInput},
@@ -14,7 +16,6 @@ use crate::{
     utils::password::{hash_password, verify_password},
 };
 use mongodb::bson::DateTime as BsonDateTime;
-use crate::routes::pateind_dataget::get_patient_details;
 
 use crate::utils::jwt::create_jwt;
 use std::env;
@@ -24,10 +25,10 @@ pub fn patient_routes(state: AppState) -> Router {
         .route("/patient/register", post(register_patient_handler))
         .route("/donor/register", post(register_donor_handler))
         .route("/patientlogin", post(patient_login))
-         .route("/patientdetails", get(get_patient_details))
+        .route("/patientdetails", get(get_patient_details))
+        .route("/patientdetails/update", put(update_patient_handler))
         .with_state(state)
 }
-
 
 async fn register_patient_handler(
     State(state): State<AppState>,
@@ -92,8 +93,9 @@ async fn register_patient_handler(
         mobile: payload.mobile.clone(),
         email: payload.email.clone(),
         password: hashed,
-        approved:false,
+        approved: false,
         created_at: BsonDateTime::now(),
+        image: None,
     };
 
     match coll.insert_one(new_patient, None).await {
@@ -162,6 +164,7 @@ async fn register_donor_handler(
         email: payload.email.clone(),
         password: hashed,
         created_at: BsonDateTime::now(),
+        image: payload.image.clone(),
     };
 
     match coll.insert_one(new_donor, None).await {
@@ -247,3 +250,6 @@ pub async fn patient_login(
         "token": token
     })))
 }
+
+
+

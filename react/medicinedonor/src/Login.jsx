@@ -88,7 +88,7 @@ const Login = () => {
             </Link>
           </li>
           <li>
-            <Link to="/donnorLogin" style={styles.link}>
+            <Link to="/Donorlogin" style={styles.link}>
               Donor Login
             </Link>
           </li>
