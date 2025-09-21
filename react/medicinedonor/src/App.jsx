@@ -35,7 +35,7 @@ function App() {
         <Route  path='/ApprovedPatients' element={<ApprovedPatients/>} />
         <Route path='/CompletedPatients' element={<CompletedPatients/>} />
         <Route path="/Donorlogin" element={<Donorlogin />} />
-          <Route path='Donorgetpatientdetails' element={<Donorgetpatientdetails/>}/>
+          <Route path='/Donorgetpatientdetails' element={<Donorgetpatientdetails/>}/>
         <Route path="/Doctor" element={<Doctor/>} />
         <Route path="/Adminhandle" element={<Adminhandle />} />
         <Route path="/Forgetpassword" element={<Forgetpassword />} />

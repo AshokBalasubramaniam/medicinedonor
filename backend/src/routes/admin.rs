@@ -2,9 +2,9 @@ use crate::routes::get_all_pateints_details::get_all_patientsdetails;
 use crate::utils::jwt::create_jwt;
 use crate::{
     models::admin::{Admin, AdminLogin, ForgetPasswordRequest, ResetPasswordRequest},
-    models::patient::{Patient, PatientLogin},
+    models::patient::{Patient},
     state::AppState,
-    utils::password::{hash_password, verify_password},
+  
 };
 use axum::extract::Multipart;
 use axum::extract::Path;
@@ -23,7 +23,7 @@ use std::path::Path as StdPath;
 use tokio::io::AsyncWriteExt;
 
 pub fn admin_routes(state: AppState) -> Router {
-    println!("Admin routes initialized");
+   
     Router::new()
         .route("/adminpage", post(admin_login))
         .route("/adminpage/getpatients", get(get_all_patientsdetails))

@@ -38,6 +38,7 @@ export const adminLogin = async (email, password) => {
   );
   return res.data; // <-- consistent with loginPatient
 };
+
 export const admingetallpatientdetails = async (token) => {
   const res = await API.get('/adminpage/getpatients', {
     headers: { Authorization: `Bearer ${token}` },
@@ -58,7 +59,6 @@ export const updatePatientDetails = async (token, updatedData) => {
   });
   return res.data;
 };
-
 
 export const loginDonor = async (email, password) => {
   const res = await API.post(
@@ -137,3 +137,31 @@ export const adminUpdatePatient = async (token, id, payload) => {
   return res.data;
 };
 console.log(adminUpdatePatient);
+
+const BASE = '/api';
+
+export async function createOrder(token, amount_rupees) {
+  const res = await fetch(`${BASE}/create_order`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ amount_rupees }),
+  });
+  if (!res.ok) throw await res.json();
+  return await res.json();
+}
+
+export async function verifyPayment(token, payload) {
+  const res = await fetch(`${BASE}/verify_payment`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw await res.json();
+  return await res.json();
+}

@@ -30,3 +30,9 @@ pub struct DonorRegisterInput {
     pub password: String,
     pub image: Option<String>,
 }
+
+#[derive(Debug, Deserialize)]
+pub struct DonorLogin {
+    pub email: String,
+    pub password: String,
+}

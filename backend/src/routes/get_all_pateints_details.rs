@@ -82,7 +82,7 @@ use axum::{
     Json,
 };
 use futures::StreamExt;
-use mongodb::{bson::doc, Collection};
+use mongodb::{Collection};
 use serde_json::json;
 
 use crate::utils::jwt::verify_jwt;
@@ -91,7 +91,7 @@ pub async fn get_all_patientsdetails(
     State(state): State<AppState>,
     headers: HeaderMap,
 ) -> Result<Json<serde_json::Value>, (StatusCode, Json<serde_json::Value>)> {
-    println!("get_all_patientsdetails called");
+
 
     // 1️⃣ Verify JWT (no role check here)
     let auth_header = headers
@@ -115,8 +115,6 @@ pub async fn get_all_patientsdetails(
         )
     })?;
 
-    println!("JWT verified for user_id: {}", claims.sub);
-
     // 2️⃣ Get MongoDB collection as Document
     let coll: Collection<mongodb::bson::Document> = state.db.collection("patients");
 
@@ -127,7 +125,7 @@ pub async fn get_all_patientsdetails(
             Json(json!({"error": format!("DB error: {}", e)})),
         )
     })?;
-    println!("Fetching all patients from database...");
+
 
     let mut patients = vec![];
 
@@ -158,7 +156,6 @@ pub async fn get_all_patientsdetails(
         patients.push(patient_json);
     }
 
-    println!("Total patients fetched: {}", patients.len());
 
     Ok(Json(serde_json::Value::Array(patients)))
 }
