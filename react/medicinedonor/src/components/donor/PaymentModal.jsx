@@ -12,14 +12,16 @@ export default function PaymentModal({ patient, onClose, onSuccess }) {
 
     setLoading(true);
     try {
+      // ✅ Backend returns { order_id, amount, currency, status, key_id }
       const orderResp = await createOrder(token, Number(amount));
+
       const options = {
         key: orderResp.key_id,
-        amount: orderResp.order.amount,
-        currency: orderResp.order.currency || 'INR',
+        amount: orderResp.amount, // backend already in paise
+        currency: orderResp.currency,
         name: 'Hospital Donation',
-        description: `Ashok`,
-        order_id: orderResp.order.id,
+        description: `Donation for ${patient.name}`,
+        order_id: orderResp.order_id, // ✅ fixed field name
 
         handler: async function (res) {
           try {

@@ -4,7 +4,7 @@ use reqwest::Client as HttpClient;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sha2::Sha256;
-use uuid::Uuid;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 type HmacSha256 = Hmac<Sha256>;
 
@@ -27,11 +27,21 @@ pub struct VerifyPayload {
     pub razorpay_signature: String,
 }
 
-#[derive(Serialize)]
+#[derive(Debug, Deserialize, Clone)]
+struct RazorpayOrderResponse {
+    id: String,
+    amount: i64,
+    currency: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize)]
 struct CreateOrderResponse {
-    order: serde_json::Value,
-    key_id: String,
     order_id: String,
+    amount: i64,
+    currency: String,
+    status: String,
+    key_id: String,
 }
 
 pub fn payment_routes(payment_state: Payment) -> Router {
@@ -47,6 +57,13 @@ pub async fn create_order(
 ) -> impl IntoResponse {
     let url = "https://api.razorpay.com/v1/orders";
 
+    // ✅ generate short unique receipt (max 40 chars)
+    let timestamp = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    let receipt = format!("rcpt_{}", timestamp); // always < 40 chars
+
     let res = state
         .http_client
         .post(url)
@@ -54,56 +71,54 @@ pub async fn create_order(
         .json(&json!({
             "amount": payload.amount_rupees * 100, // in paise
             "currency": "INR",
-            "receipt": format!("rcpt_{}", Uuid::new_v4())
+            "receipt": receipt,
         }))
         .send()
         .await;
 
     match res {
-        Ok(resp) => match resp.json::<serde_json::Value>().await {
-            Ok(json_resp) => {
-                // Extract order ID safely
-                let order_id = json_resp
-                    .get("id")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or_else(|| {
-                        eprintln!("Razorpay response missing 'id': {:?}", json_resp);
-                        ""
-                    })
-                    .to_string();
-
-                println!("order_id: {}", order_id);
-
-                (
-                    StatusCode::OK,
-                    Json(CreateOrderResponse {
-                        order: json_resp,
-                        key_id: state.razor_key_id.clone(),
-                        order_id,
-                    }),
-                )
-                    .into_response()
+        Ok(resp) => {
+            if resp.status().is_success() {
+                match resp.json::<RazorpayOrderResponse>().await {
+                    Ok(order) => {
+                        println!("✅ Razorpay order created: {:#?}", order);
+                        (
+                            StatusCode::OK,
+                            Json(CreateOrderResponse {
+                                order_id: order.id,
+                                amount: order.amount,
+                                currency: order.currency,
+                                status: order.status,
+                                key_id: state.razor_key_id.clone(),
+                            }),
+                        )
+                            .into_response()
+                    }
+                    Err(err) => {
+                        eprintln!("❌ Failed to parse Razorpay response: {:?}", err);
+                        (
+                            StatusCode::INTERNAL_SERVER_ERROR,
+                            Json(json!({"error":"failed to parse razorpay response"})),
+                        )
+                            .into_response()
+                    }
+                }
+            } else {
+                let text = resp.text().await.unwrap_or_else(|_| "unknown error".into());
+                eprintln!("❌ Razorpay returned error: {}", text);
+                (StatusCode::BAD_GATEWAY, Json(json!({"error": text}))).into_response()
             }
-            Err(err) => {
-                eprintln!("Failed to parse Razorpay response: {:?}", err);
-                (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    Json(json!({"error": "failed to parse razorpay response"})),
-                )
-                    .into_response()
-            }
-        },
+        }
         Err(err) => {
-            eprintln!("Razorpay API request failed: {:?}", err);
+            eprintln!("❌ Razorpay API call failed: {:?}", err);
             (
                 StatusCode::BAD_GATEWAY,
-                Json(json!({"error": "razorpay api request failed"})),
+                Json(json!({"error":"razorpay api request failed"})),
             )
                 .into_response()
         }
     }
 }
-
 
 pub async fn verify_payment(
     State(state): State<Payment>,
@@ -118,10 +133,14 @@ pub async fn verify_payment(
     );
     mac.update(data.as_bytes());
 
-    // Razorpay signature is HEX, not base64
+    // 🔑 Razorpay sends signature as HEX
     let generated_signature = hex::encode(mac.finalize().into_bytes());
 
     if generated_signature != payload.razorpay_signature {
+        eprintln!(
+            "❌ Invalid signature. Expected: {}, Got: {}",
+            generated_signature, payload.razorpay_signature
+        );
         return (
             StatusCode::BAD_REQUEST,
             Json(json!({"error": "invalid signature"})),
