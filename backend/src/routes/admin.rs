@@ -23,7 +23,7 @@ use std::path::Path as StdPath;
 use tokio::io::AsyncWriteExt;
 
 pub fn admin_routes(state: AppState) -> Router {
-   
+  
     Router::new()
         .route("/adminpage", post(admin_login))
         .route("/adminpage/getpatients", get(get_all_patientsdetails))

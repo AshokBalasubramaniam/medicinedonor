@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { createOrder, verifyPayment } from '../../api';
+import { createOrder, updatePatientDetails, verifyPayment } from '../../api';
 
 export default function PaymentModal({ patient, onClose, onSuccess }) {
   const [amount, setAmount] = useState('');
@@ -30,6 +30,8 @@ export default function PaymentModal({ patient, onClose, onSuccess }) {
               razorpay_order_id: res.razorpay_order_id,
               razorpay_payment_id: res.razorpay_payment_id,
               razorpay_signature: res.razorpay_signature,
+             patient_id: patient.id, // <-- use _id from Mongo
+  amount: Number(amount), 
             });
 
             alert('✅ Payment successful!');
@@ -80,6 +82,7 @@ export default function PaymentModal({ patient, onClose, onSuccess }) {
         }}
       >
         <h3>Donate to {patient.name}</h3>
+        <h2>id :{patient.id}</h2>
         <p>Remaining: ₹ {patient.amount_due}</p>
         <form onSubmit={handlePay}>
           <input

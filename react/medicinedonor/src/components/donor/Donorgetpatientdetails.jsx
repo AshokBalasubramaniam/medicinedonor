@@ -81,7 +81,10 @@ function Donorgetpatientdetails() {
                 <strong>Hospital:</strong> {p.hospital}
               </p>
               <p>
-                <strong>Amount:</strong> {p.amount}
+                <strong>TottalAmount:</strong> {p.amount}
+              </p>
+              <p>
+                <strong>balance:</strong>{p.balance_amount}
               </p>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontWeight: 700, marginBottom: 6 }}>

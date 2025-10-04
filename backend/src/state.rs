@@ -5,7 +5,10 @@ use serde::Deserialize;
 pub struct AppState {
     pub db: Database,
 }
-
+pub async fn get_db() -> anyhow::Result<Database> {
+    let state = init_state().await?;
+    Ok(state.db)
+}
 #[derive(Debug, Deserialize)]
 pub struct Config {
     pub mongodb_uri: String,

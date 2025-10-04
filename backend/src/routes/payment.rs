@@ -1,10 +1,14 @@
 use axum::{extract::State, http::StatusCode, response::IntoResponse, routing::post, Json, Router};
 use hmac::{Hmac, Mac};
+use mongodb::bson::{doc, oid::ObjectId};
+use mongodb::Database;
 use reqwest::Client as HttpClient;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sha2::Sha256;
 use std::time::{SystemTime, UNIX_EPOCH};
+use crate::state::get_db;
+use crate::models::patient::Patient;
 
 type HmacSha256 = Hmac<Sha256>;
 
@@ -25,6 +29,8 @@ pub struct VerifyPayload {
     pub razorpay_order_id: String,
     pub razorpay_payment_id: String,
     pub razorpay_signature: String,
+    pub patient_id: String,  
+    pub amount: i64,       
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -51,25 +57,26 @@ pub fn payment_routes(payment_state: Payment) -> Router {
         .with_state(payment_state)
 }
 
+// --------------------- Create Razorpay Order ---------------------
+
 pub async fn create_order(
     State(state): State<Payment>,
     Json(payload): Json<CreateOrderRequest>,
 ) -> impl IntoResponse {
     let url = "https://api.razorpay.com/v1/orders";
 
-    // ✅ generate short unique receipt (max 40 chars)
     let timestamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
         .as_secs();
-    let receipt = format!("rcpt_{}", timestamp); // always < 40 chars
+    let receipt = format!("rcpt_{}", timestamp);
 
     let res = state
         .http_client
         .post(url)
         .basic_auth(&state.razor_key_id, Some(&state.razor_key_secret))
         .json(&json!({
-            "amount": payload.amount_rupees * 100, // in paise
+            "amount": payload.amount_rupees * 100, // Razorpay expects paise
             "currency": "INR",
             "receipt": receipt,
         }))
@@ -81,7 +88,6 @@ pub async fn create_order(
             if resp.status().is_success() {
                 match resp.json::<RazorpayOrderResponse>().await {
                     Ok(order) => {
-                        println!("✅ Razorpay order created: {:#?}", order);
                         (
                             StatusCode::OK,
                             Json(CreateOrderResponse {
@@ -120,6 +126,8 @@ pub async fn create_order(
     }
 }
 
+// --------------------- Verify Payment & Update Patient ---------------------
+
 pub async fn verify_payment(
     State(state): State<Payment>,
     Json(payload): Json<VerifyPayload>,
@@ -133,14 +141,9 @@ pub async fn verify_payment(
     );
     mac.update(data.as_bytes());
 
-    // 🔑 Razorpay sends signature as HEX
     let generated_signature = hex::encode(mac.finalize().into_bytes());
 
     if generated_signature != payload.razorpay_signature {
-        eprintln!(
-            "❌ Invalid signature. Expected: {}, Got: {}",
-            generated_signature, payload.razorpay_signature
-        );
         return (
             StatusCode::BAD_REQUEST,
             Json(json!({"error": "invalid signature"})),
@@ -148,5 +151,56 @@ pub async fn verify_payment(
             .into_response();
     }
 
-    (StatusCode::OK, Json(json!({"status": "payment verified"}))).into_response()
+    // ✅ Update MongoDB Patient record
+    match update_patient_payment(&payload.patient_id, &payload.razorpay_payment_id, payload.amount).await
+    {
+        Ok(_) => (
+            StatusCode::OK,
+            Json(json!({"status": "payment verified and updated in patient DB"})),
+        )
+            .into_response(),
+        Err(err) => {
+            eprintln!("❌ Failed to update patient DB: {:?}", err);
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({"error": "payment verified but DB update failed"})),
+            )
+                .into_response()
+        }
+    }
+}
+
+// --------------------- MongoDB Update ---------------------
+
+pub async fn update_patient_payment(
+    patient_id: &str,
+    payment_id: &str,
+    amount: i64,
+) -> anyhow::Result<()> {
+    let db: Database = get_db().await?;
+    let coll = db.collection::<Patient>("patients");
+
+    let obj_id = ObjectId::parse_str(patient_id)?;
+
+    // Use an aggregation-style update to recalc balance_amount
+    coll.update_one(
+        doc! { "_id": obj_id },
+        vec![
+            doc! {
+                "$set": {
+                    "paid_amount": { "$add": ["$paid_amount", amount] },
+                }
+            },
+            doc! {
+                "$set": {
+                    "balance_amount": { "$subtract": ["$amount", "$paid_amount"] },
+                    "last_payment_id": payment_id
+                }
+            }
+        ],
+        None,
+    )
+    .await?;
+
+    Ok(())
 }

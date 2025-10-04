@@ -121,7 +121,7 @@ export const registerdoctor = async (payload, token) => {
   const res = await axios.post('/api/admin/registerdoctor', payload, {
     headers: {
       Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/json',newamountupdate
     },
   });
   return res.data;

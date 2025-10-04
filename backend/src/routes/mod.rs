@@ -28,7 +28,7 @@ pub fn payment_route() -> Router {
     let payment_state = Payment {
         razor_key_id: "rzp_test_RKFCfniNFmF9k7".to_string(), // test key
         razor_key_secret: "1wQ9eNThXcVwXT5lcNwm81Q4".to_string(),
-        http_client: reqwest::Client::new(),
+        http_client: reqwest::Client::new(), 
     };
 
     Router::new().nest("/api", payment_routes(payment_state))

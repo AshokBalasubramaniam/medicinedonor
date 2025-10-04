@@ -31,7 +31,7 @@ pub struct Patient {
     pub state: String,
      #[serde(default)] 
     pub approved: bool,
-    pub image: Option<String>,
+    pub image: Option<String>, 
 }
 
 #[derive(Debug, Deserialize)]
