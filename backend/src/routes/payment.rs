@@ -196,7 +196,9 @@ pub async fn update_patient_payment(
                     "balance_amount": { "$subtract": ["$amount", "$paid_amount"] },
                     "last_payment_id": payment_id
                 }
-            }
+            
+            },
+            
         ],
         None,
     )

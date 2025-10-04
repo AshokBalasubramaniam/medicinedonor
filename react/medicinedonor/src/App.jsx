@@ -43,7 +43,23 @@ function App() {
        <Route path="/AdminPatientDetails/:id" element={<AdminPatientDetails />} />   
        <Route path='/adminlogin' />
       </Routes>
+       <style>
+      {`
+        /* ✅ Remove up/down arrows in Chrome, Safari, Edge, Opera */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+
+        /* ✅ Remove up/down arrows in Firefox */
+        input[type=number] {
+          -moz-appearance: textfield;
+        }
+      `}
+    </style>
     </Router>
+    
   );
 }
 

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { admingetallpatientdetails } from '../../api';
 import { logout } from '../../store/authSlice';
 import PaymentModal from './PaymentModal';
+import donorimage from '../../assets/donorimage.png';
 
 function Donorgetpatientdetails() {
   const [patients, setPatients] = useState([]);
@@ -47,78 +48,151 @@ function Donorgetpatientdetails() {
     return () => clearTimeout(timer);
   }, [token, dispatch, navigate]);
 
-  return (
-    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <h2>All Patient Details</h2>
-      {loading && <p>Loading...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {patients.length > 0 ? (
-        <ul style={{ listStyle: 'none', padding: 0 }}>
-          {patients.map((p) => (
-            <li
-              key={p._id}
-              style={{
-                border: '1px solid #ddd',
-                borderRadius: 8,
-                padding: 10,
-                marginBottom: 10,
-                background: '#f9f9f9',
-              }}
-            >
-              <p>
-                <strong>id:</strong> {p.id}
-              </p>
-              <p>
-                <strong>Name:</strong> {p.name}
-              </p>
-              <p>
-                <strong>Age:</strong> {p.age}
-              </p>
-              <p>
-                <strong>Disease:</strong> {p.disease}
-              </p>
-              <p>
-                <strong>Hospital:</strong> {p.hospital}
-              </p>
-              <p>
-                <strong>TottalAmount:</strong> {p.amount}
-              </p>
-              <p>
-                <strong>balance:</strong>{p.balance_amount}
-              </p>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontWeight: 700, marginBottom: 6 }}>
-                  ₹ {p.amount_due}
-                </div>
-                <button
-                  onClick={() => {
-                    setSelected(p);
-                    setOpen(true);
-                  }}
-                >
-                  Pay
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        !loading && <p>No patients found.</p>
-      )}
+  const styles = {
+    donorContainer: {
+      fontFamily: 'Arial, sans-serif',
+      padding: 0,
+      margin: 0,
+    },
+    navbar: {
+      background: '#0b9a9a',
+      height: '60px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    navbarTitle: {
+      color: 'black',
+      fontSize: '40px',
+      margin: 0,
+    },
+    mainContainer: {
+      padding: '20px',
+      position: 'relative',
+    },
+donorBanner: {
+  width: '100%',
+  height: 'auto',
+  minHeight: '810px',
+  backgroundImage: `url(${donorimage})`,
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  borderRadius: '10px',
+  marginBottom: '20px',
+  position: 'relative',
+  overflow: 'hidden',
+},
 
-      {open && selected && (
-        <PaymentModal
-          patient={selected}
-          onClose={() => {
-            setOpen(false);
-            setSelected(null);
-          }}
-          onSuccess={() => {
-            setOpen(false);
-            setSelected(null);
-          }}
-        />
-      )}
+donorBannerOverlay: {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  width: '100%',
+  height: '100%',
+  backgroundColor: 'rgba(255,255,255,0.4)', // light overlay
+  backdropFilter: 'blur(1px)',               // blur effect
+  borderRadius: '10px',
+},
+
+    error: {
+      color: 'red',
+      marginTop: '10px',
+    },
+    patientGrid: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+      gap: '20px',
+      listStyle: 'none',
+      padding: 0,
+      margin: 0,
+    },
+    patientCard: {
+      border: '1px solid #ddd',
+      borderRadius: '12px',
+      padding: '16px',
+      background: '#fff',
+      boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
+      transition: 'transform 0.2s',
+      borderLeft: '6px solid #0b9a9a',
+    },
+    cardActions: {
+      textAlign: 'right',
+      marginTop: '10px',
+    },
+    payBtn: {
+      padding: '8px 16px',
+      background: '#007bff',
+      border: 'none',
+      borderRadius: '6px',
+      color: '#fff',
+      cursor: 'pointer',
+      transition: 'background 0.2s',
+    },
+  };
+
+  return (
+    <div style={styles.donorContainer}>
+      <nav style={styles.navbar}>
+        <h2 style={styles.navbarTitle}>Donate & save Lives</h2>
+      </nav>
+
+      <div style={styles.mainContainer}>
+        <div style={styles.donorBanner}>
+            <div style={styles.donorBannerOverlay}>
+
+        {loading && <p>Loading...</p>}
+        {error && <p style={styles.error}>{error}</p>}
+
+        {patients.length > 0 ? (
+          <ul style={styles.patientGrid}>
+            {patients
+              .filter((p) => p.completed_payment !== true)
+              .map((p) => (
+                <li key={p._id} style={styles.patientCard}>
+                  <p><strong>ID:</strong> {p.id}</p>
+                  <p><strong>Name:</strong> {p.name}</p>
+                  <p><strong>Age:</strong> {p.age}</p>
+                  <p><strong>Disease:</strong> {p.disease}</p>
+                  <p><strong>Hospital:</strong> {p.hospital}</p>
+                  <p><strong>Total Amount:</strong> ₹ {p.amount}</p>
+                  <p><strong>Balance:</strong> ₹ {p.balance_amount}</p>
+                  <div style={styles.cardActions}>
+                    <button
+                      style={styles.payBtn}
+                      onMouseOver={(e) => (e.target.style.background = '#0056b3')}
+                      onMouseOut={(e) => (e.target.style.background = '#007bff')}
+                      onClick={() => {
+                        setSelected(p);
+                        setOpen(true);
+                      }}
+                    >
+                      Pay
+                    </button>
+                  </div>
+                </li>
+              ))}
+          </ul>
+        ) : (
+          !loading && <p>No patients found.</p>
+        )}
+
+        {/* Payment Modal */}
+        {open && selected && (
+          <PaymentModal
+            patient={selected}
+            onClose={() => {
+              setOpen(false);
+              setSelected(null);
+            }}
+            onSuccess={() => {
+              setOpen(false);
+              setSelected(null);
+            }}
+          />
+        )}
+      </div>
+    </div>
+    </div>
     </div>
   );
 }

@@ -73,6 +73,7 @@ const Login = () => {
       textDecoration: 'underline',
       fontWeight: 'bold',
     },
+    
   };
 
   return (
@@ -98,6 +99,9 @@ const Login = () => {
           <Link to="/register" style={styles.registerLink}>Register</Link>
         </div>
       </div>
+
+
+      
     </div>
   );
 };
