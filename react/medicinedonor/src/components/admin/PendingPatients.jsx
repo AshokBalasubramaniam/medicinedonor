@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { admingetallpatientdetails, adminUpdatePatient } from '../../api';
 import { logout } from '../../store/authSlice';
+import AdminNavbar from "../admin/AdminNavbar";
 
 function PendingPatients() {
   const navigate = useNavigate();
@@ -27,17 +28,14 @@ function PendingPatients() {
     }
   }
 
-  // ✅ Fetch patients
   useEffect(() => {
     if (!token) {
       navigate('/adminpage');
       return;
     }
-
     fetchPatients();
   }, [token, dispatch, navigate]);
 
-  // ✅ When selecting a patient, load into form
   useEffect(() => {
     if (selectedPatient) {
       setEditPatient({
@@ -61,7 +59,6 @@ function PendingPatients() {
     }
   }, [selectedPatient]);
 
-  // ✅ Approve handler
   async function handleApprove() {
     setLoading(true);
     try {
@@ -70,10 +67,10 @@ function PendingPatients() {
         if (editPatient[key]) formData.append(key, editPatient[key]);
       });
       if (dpFile) formData.append('image', dpFile);
-      formData.append('approved', 'true'); // approve
-      const res = await adminUpdatePatient(token, editPatient.id, formData);
+      formData.append('approved', 'true');
+      await adminUpdatePatient(token, editPatient.id, formData);
       alert('Patient approved!');
-      setSelectedPatient(null); // go back to list
+      setSelectedPatient(null);
       setPatients((prev) => prev.filter((p) => p._id !== editPatient.id));
       fetchPatients();
     } catch (err) {
@@ -84,14 +81,12 @@ function PendingPatients() {
     }
   }
 
-  // ✅ Reject handler
   async function handleReject() {
     setLoading(true);
     try {
       const formData = new FormData();
       formData.append('approved', 'true');
-
-      const res = await adminUpdatePatient(token, editPatient.id, formData);
+      await adminUpdatePatient(token, editPatient.id, formData);
       alert('Patient rejected!');
       setSelectedPatient(null);
       setPatients((prev) => prev.filter((p) => p.id !== editPatient.id));
@@ -103,7 +98,6 @@ function PendingPatients() {
     }
   }
 
-  // ✅ File input handler
   function handleFileChange(e) {
     const file = e.target.files?.[0];
     if (file) {
@@ -112,75 +106,179 @@ function PendingPatients() {
     }
   }
 
+  const style = {
+    root: {
+      padding: 20,
+      marginBottom:20,
+    },
+    heading: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      marginBottom: 20,
+      textAlign: 'center',
+      color: '#166534',
+    },
+    grid: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+      gap: 20,
+       marginTop:50,
+    },
+    card: {
+      background: '#fff',
+      padding: 15,
+      borderRadius: 10,
+      boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+      width: 300,
+      borderLeft: '6px solid #287215',
+    },
+    cardTitle: {
+      margin: '0 0 10px',
+      fontSize: 18,
+      fontWeight: '600',
+    },
+    cardButton: {
+      marginTop: 10,
+      padding: '8px 14px',
+      background: '#007bff',
+      color: '#fff',
+      border: 'none',
+      borderRadius: 6,
+      cursor: 'pointer',
+    },
+    pdRoot: {
+      padding: 20,
+    },
+    pdCard: {
+      background: '#fff',
+      padding: 20,
+      borderRadius: 12,
+      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    },
+    pdHeading: {
+      fontSize: 22,
+      marginBottom: 20,
+      textAlign: 'center',
+      fontWeight: 'bold',
+    },
+    pdTop: {
+      display: 'flex',
+      gap: 20,
+      marginBottom: 20,
+      alignItems: 'flex-start',
+    },
+    pdImageWrap: {
+      textAlign: 'center',
+      flex: '0 0 150px',
+    },
+    pdImage: {
+      width: 120,
+      height: 120,
+      borderRadius: '50%',
+      objectFit: 'cover',
+      marginBottom: 10,
+    },
+    pdFileLabel: {
+      display: 'block',
+      cursor: 'pointer',
+      color: '#007bff',
+      fontSize: 14,
+    },
+    pdSummary: {
+      flex: 1,
+    },
+    pdName: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      marginBottom: 8,
+    },
+    pdMeta: {
+      color: '#666',
+      marginBottom: 10,
+    },
+    pdActions: {
+      marginTop: 10,
+    },
+    pdButton: {
+      marginRight: 10,
+      padding: '8px 14px',
+      border: 'none',
+      borderRadius: 6,
+      cursor: 'pointer',
+      color: '#fff',
+    },
+    approveBtn: { background: '#28a745' },
+    rejectBtn: { background: '#dc3545' },
+    backBtn: { background: '#6c757d' },
+    pdForm: { marginTop: 20 },
+    pdGrid: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+      gap: 20,
+    },
+    pdField: {
+      display: 'flex',
+      flexDirection: 'column',
+    },
+    pdLabel: {
+      fontWeight: 500,
+      marginBottom: 5,
+    },
+    pdInput: {
+      padding: '10px 12px',
+      border: '1px solid #ccc',
+      borderRadius: 6,
+      fontSize: 14,
+      color: '#333',
+      background: '#fff',
+    },
+    pdTextarea: {
+      minHeight: 70,
+      resize: 'vertical',
+      padding: '10px 12px',
+      border: '1px solid #ccc',
+      borderRadius: 6,
+      fontSize: 14,
+      color: '#333',
+      background: '#fff',
+    },
+  };
+
   if (!selectedPatient) {
     return (
-      <div className="pp-root">
-        <h2 className="pp-heading">Pending Patients</h2>
+      <div style={style.root}>
+        <AdminNavbar />
         {patients.length === 0 ? (
           <p>No pending patients.</p>
         ) : (
-          <div className="pp-grid">
+          <div style={style.grid}>
             {patients.map((p) => (
-              <div key={p.id} className="pp-card">
-                <h3>{p.name}</h3>
+              <div key={p.id} style={style.card}>
+                <h3 style={style.cardTitle}>{p.name}</h3>
                 <p>Email: {p.email}</p>
                 <p>Age: {p.age}</p>
                 <p>Mobile: {p.mobile}</p>
-                <button onClick={() => setSelectedPatient(p)}>
+                <button
+                  style={style.cardButton}
+                  onClick={() => setSelectedPatient(p)}
+                >
                   View Details
                 </button>
               </div>
             ))}
           </div>
         )}
-
-        <style>{`
-          .pp-root {
-            padding: 20px;
-          }
-          .pp-heading {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 20px;
-          }
-          .pp-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-          }
-          .pp-card {
-            background: #fff;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-          }
-          .pp-card h3 {
-            margin: 0 0 10px;
-          }
-          .pp-card button {
-            margin-top: 10px;
-            padding: 8px 14px;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-          }
-          .pp-card button:hover {
-            background: #0056b3;
-          }
-        `}</style>
       </div>
     );
   }
 
   return (
-    <div className="pd-root">
-      <div className="pd-card">
-        <h2 className="pd-heading">Patient Details (Admin View)</h2>
+    <div style={style.pdRoot}>
+      <div style={style.pdCard}>
+        <h2 style={style.pdHeading}>Patient Details (Admin View)</h2>
 
-        <div className="pd-top">
-          <div className="pd-imageWrap">
+        <div style={style.pdTop}>
+          <div style={style.pdImageWrap}>
             <img
               src={
                 dpPreview ||
@@ -188,44 +286,42 @@ function PendingPatients() {
                 'https://cdn-icons-png.flaticon.com/512/847/847969.png'
               }
               alt="Patient"
-              className="pd-image"
+              style={style.pdImage}
             />
-            <label className="pd-fileLabel">
+            <label style={style.pdFileLabel}>
               <input
                 type="file"
                 accept="image/*"
                 onChange={handleFileChange}
-                className="pd-fileInput"
+                style={{ display: 'none' }}
               />
-              <span className="pd-fileText">Change photo</span>
+              <span>Change photo</span>
             </label>
           </div>
 
-          <div className="pd-summary">
-            <div className="pd-name">{editPatient.name}</div>
-            <div className="pd-meta">
-              <span>
-                {editPatient.age ? `${editPatient.age} yrs` : 'Age: -'}
-              </span>
-              <span>{editPatient.sex}</span>
+          <div style={style.pdSummary}>
+            <div style={style.pdName}>{editPatient.name}</div>
+            <div style={style.pdMeta}>
+              {editPatient.age ? `${editPatient.age} yrs` : 'Age: -'} |{' '}
+              {editPatient.sex}
             </div>
-            <div className="pd-actions">
+            <div style={style.pdActions}>
               <button
-                className="pd-saveBtn"
+                style={{ ...style.pdButton, ...style.approveBtn }}
                 onClick={handleApprove}
                 disabled={loading}
               >
                 {loading ? 'Approving…' : 'Approve'}
               </button>
               <button
-                className="pd-rejectBtn"
+                style={{ ...style.pdButton, ...style.rejectBtn }}
                 onClick={handleReject}
                 disabled={loading}
               >
                 Reject
               </button>
               <button
-                className="pd-backBtn"
+                style={{ ...style.pdButton, ...style.backBtn }}
                 onClick={() => setSelectedPatient(null)}
               >
                 Back
@@ -235,22 +331,22 @@ function PendingPatients() {
         </div>
 
         <form
-          className="pd-form"
+          style={style.pdForm}
           onSubmit={(e) => {
             e.preventDefault();
             handleApprove();
           }}
         >
-          <div className="pd-grid">
-            <div className="pd-field">
-              <label className="pd-label">ID</label>
-              <input className="pd-input" value={editPatient.id} disabled />
+          <div style={style.pdGrid}>
+            <div style={style.pdField}>
+              <label style={style.pdLabel}>ID</label>
+              <input style={style.pdInput} value={editPatient.id} disabled />
             </div>
 
-            <div className="pd-field">
-              <label className="pd-label">Name</label>
+            <div style={style.pdField}>
+              <label style={style.pdLabel}>Name</label>
               <input
-                className="pd-input"
+                style={style.pdInput}
                 value={editPatient.name}
                 onChange={(e) =>
                   setEditPatient({ ...editPatient, name: e.target.value })
@@ -258,29 +354,28 @@ function PendingPatients() {
               />
             </div>
 
-            <div className="pd-field">
-              <label className="pd-label">Amount</label>
+            <div style={style.pdField}>
+              <label style={style.pdLabel}>Amount</label>
               <input
                 type="number"
-                className="pd-input"
+                style={style.pdInput}
                 value={editPatient.amount || ''}
-                onChange={
-                  (e) =>
-                    setEditPatient({ ...editPatient, amount: e.target.value }) // ✅ fixed
+                onChange={(e) =>
+                  setEditPatient({ ...editPatient, amount: e.target.value })
                 }
               />
             </div>
 
-            <div className="pd-field">
-              <label className="pd-label">Email</label>
-              <input className="pd-input" value={editPatient.email} disabled />
+            <div style={style.pdField}>
+              <label style={style.pdLabel}>Email</label>
+              <input style={style.pdInput} value={editPatient.email} disabled />
             </div>
 
-            <div className="pd-field">
-              <label className="pd-label">Age</label>
+            <div style={style.pdField}>
+              <label style={style.pdLabel}>Age</label>
               <input
                 type="number"
-                className="pd-input"
+                style={style.pdInput}
                 value={editPatient.age}
                 onChange={(e) =>
                   setEditPatient({ ...editPatient, age: e.target.value })
@@ -288,10 +383,10 @@ function PendingPatients() {
               />
             </div>
 
-            <div className="pd-field">
-              <label className="pd-label">Mobile</label>
+            <div style={style.pdField}>
+              <label style={style.pdLabel}>Mobile</label>
               <input
-                className="pd-input"
+                style={style.pdInput}
                 value={editPatient.mobile}
                 onChange={(e) =>
                   setEditPatient({ ...editPatient, mobile: e.target.value })
@@ -299,10 +394,10 @@ function PendingPatients() {
               />
             </div>
 
-            <div className="pd-field">
-              <label className="pd-label">Sex</label>
+            <div style={style.pdField}>
+              <label style={style.pdLabel}>Sex</label>
               <select
-                className="pd-input"
+                style={style.pdInput}
                 value={editPatient.sex || ''}
                 onChange={(e) =>
                   setEditPatient({ ...editPatient, sex: e.target.value })
@@ -315,10 +410,10 @@ function PendingPatients() {
               </select>
             </div>
 
-            <div className="pd-field full">
-              <label className="pd-label">Disease</label>
+            <div style={style.pdField}>
+              <label style={style.pdLabel}>Disease</label>
               <textarea
-                className="pd-textarea"
+                style={style.pdTextarea}
                 value={editPatient.disease}
                 onChange={(e) =>
                   setEditPatient({ ...editPatient, disease: e.target.value })
@@ -326,10 +421,10 @@ function PendingPatients() {
               />
             </div>
 
-            <div className="pd-field full">
-              <label className="pd-label">Medicines</label>
+            <div style={style.pdField}>
+              <label style={style.pdLabel}>Medicines</label>
               <textarea
-                className="pd-textarea"
+                style={style.pdTextarea}
                 value={editPatient.medicines}
                 onChange={(e) =>
                   setEditPatient({ ...editPatient, medicines: e.target.value })
@@ -337,10 +432,10 @@ function PendingPatients() {
               />
             </div>
 
-            <div className="pd-field">
-              <label className="pd-label">Relationship</label>
+            <div style={style.pdField}>
+              <label style={style.pdLabel}>Relationship</label>
               <select
-                className="pd-input"
+                style={style.pdInput}
                 value={editPatient.relationshipstatus || ''}
                 onChange={(e) =>
                   setEditPatient({
@@ -355,11 +450,11 @@ function PendingPatients() {
               </select>
             </div>
 
-            <div className="pd-field">
-              <label className="pd-label">Admission</label>
+            <div style={style.pdField}>
+              <label style={style.pdLabel}>Admission</label>
               <input
                 type="date"
-                className="pd-input"
+                style={style.pdInput}
                 value={editPatient.admission || ''}
                 onChange={(e) =>
                   setEditPatient({ ...editPatient, admission: e.target.value })
@@ -367,11 +462,11 @@ function PendingPatients() {
               />
             </div>
 
-            <div className="pd-field">
-              <label className="pd-label">Discharge</label>
+            <div style={style.pdField}>
+              <label style={style.pdLabel}>Discharge</label>
               <input
                 type="date"
-                className="pd-input"
+                style={style.pdInput}
                 value={editPatient.discharge || ''}
                 onChange={(e) =>
                   setEditPatient({ ...editPatient, discharge: e.target.value })
@@ -379,10 +474,10 @@ function PendingPatients() {
               />
             </div>
 
-            <div className="pd-field full">
-              <label className="pd-label">Address</label>
+            <div style={style.pdField}>
+              <label style={style.pdLabel}>Address</label>
               <textarea
-                className="pd-textarea"
+                style={style.pdTextarea}
                 value={editPatient.address}
                 onChange={(e) =>
                   setEditPatient({ ...editPatient, address: e.target.value })
@@ -392,111 +487,6 @@ function PendingPatients() {
           </div>
         </form>
       </div>
-
-      <style>{`
-        .pd-root {
-          padding: 20px;
-        }
-        .pd-card {
-          background: #fff;
-          padding: 20px;
-          border-radius: 12px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        .pd-heading {
-          font-size: 22px;
-          margin-bottom: 20px;
-          text-align: center;
-          font-weight: bold;
-        }
-        .pd-top {
-          display: flex;
-          gap: 20px;
-          margin-bottom: 20px;
-          align-items: flex-start;
-        }
-        .pd-imageWrap {
-          text-align: center;
-          flex: 0 0 150px;
-        }
-        .pd-image {
-          width: 120px;
-          height: 120px;
-          border-radius: 50%;
-          object-fit: cover;
-          margin-bottom: 10px;
-        }
-        .pd-fileLabel {
-          display: block;
-          cursor: pointer;
-          color: #007bff;
-          font-size: 14px;
-        }
-        .pd-fileInput {
-          display: none;
-        }
-        .pd-summary {
-          flex: 1;
-        }
-        .pd-name {
-          font-size: 20px;
-          font-weight: bold;
-          margin-bottom: 8px;
-        }
-        .pd-meta span {
-          margin-right: 12px;
-          color: #666;
-        }
-        .pd-actions {
-          margin-top: 10px;
-        }
-        .pd-saveBtn, .pd-rejectBtn, .pd-backBtn {
-          margin-right: 10px;
-          padding: 8px 14px;
-          border: none;
-          border-radius: 6px;
-          cursor: pointer;
-        }
-        .pd-saveBtn { background: #28a745; color: white; }
-        .pd-saveBtn:hover { background: #218838; }
-        .pd-rejectBtn { background: #dc3545; color: white; }
-        .pd-rejectBtn:hover { background: #c82333; }
-        .pd-backBtn { background: #6c757d; color: white; }
-        .pd-backBtn:hover { background: #5a6268; }
-
-        .pd-form { margin-top: 20px; }
-        .pd-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-          gap: 20px;
-        }
-        .pd-field {
-          display: flex;
-          flex-direction: column;
-        }
-        .pd-field.full { grid-column: span 2; }
-        .pd-label {
-          font-weight: 500;
-          margin-bottom: 5px;
-        }
-        .pd-input, .pd-textarea, select {
-          padding: 10px 12px;
-          border: 1px solid #ccc;
-          border-radius: 6px;
-          font-size: 14px;
-          background: #fff;
-          color: #333;
-        }
-        .pd-input:focus, .pd-textarea:focus, select:focus {
-          border-color: #007bff;
-          outline: none;
-          box-shadow: 0 0 0 2px rgba(0,123,255,0.2);
-        }
-        .pd-textarea {
-          min-height: 70px;
-          resize: vertical;
-        }
-      `}</style>
     </div>
   );
 }

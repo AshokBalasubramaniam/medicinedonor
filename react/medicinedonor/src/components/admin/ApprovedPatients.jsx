@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { admingetallpatientdetails } from '../../api';
 import { logout } from '../../store/authSlice';
+import AdminNavbar from "../admin/AdminNavbar";
 
 function ApprovedPatients() {
   const Navigate = useNavigate();
@@ -11,6 +12,10 @@ function ApprovedPatients() {
   const [patients, setPatients] = useState([]);
   const [allPatients, setAllPatients] = useState([]);
   const style = {
+        root: {
+      padding: 20,
+      marginBottom:20,
+    },
     approvegrid: {
       display: 'grid',
       gridTemplateColumns: 'repeat(1fr)',
@@ -92,10 +97,12 @@ function ApprovedPatients() {
     }
   };
   return (
-    <div>
+    <div style={style.root}>
       <div>
-        <h2 style={style.heading}>Approved Patients</h2>
+<AdminNavbar />
+ 
       </div>
+         
       <div style={style.search}>
         <input
           style={style.input}

@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { admingetallpatientdetails, registerdoctor } from '../../api';
 import { logout } from '../../store/authSlice';
 import { useDispatch, useSelector } from 'react-redux';
+import AdminNavbar from "../admin/AdminNavbar";
 
 function Dashboard() {
   const location = useLocation();
@@ -292,44 +293,9 @@ function Dashboard() {
 
   return (
     <div style={styles.mainContainer}>
-      {/* Navbar */}
-      <nav style={styles.nav}>
-        <ul style={styles.navList}>
-          {[
-            { path: '/dashboard', label: 'Dashboard' },
-            { path: '/pendingpatients', label: 'Pending' },
-            { path: '/ApprovedPatients', label: 'Approved' },
-            { path: '/rejected-patient', label: 'Rejected' },
-            { path: '/CompletedPatients', label: 'Completed' },
-            { path: '/all-patients', label: 'All' },
-          ].map((item) => (
-            <li key={item.path}>
-              <Link
-                to={item.path}
-                style={{
-                  ...styles.link,
-                  ...(location.pathname === item.path ? styles.activeLink : {}),
-                }}
-              >
-                {item.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
-
-        <div style={styles.navRight}>
-          <button
-            style={styles.button}
-            onClick={() => setShowDoctorModal(true)}
-          >
-            ➕ Add Doctor
-          </button>
-          <button style={styles.logoutButton} onClick={handleLogout}>
-            Logout
-          </button>
-        </div>
-      </nav>
-
+     
+      {/* ✅ Reusable Navbar */}
+      <AdminNavbar onAddDoctor={() => setShowDoctorModal(true)} />
       {/* Stats Cards */}
       <div style={styles.cardsWrapper}>
         <div style={styles.card}>
