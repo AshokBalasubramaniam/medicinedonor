@@ -101,10 +101,10 @@ pub async fn admin_login(
     })))
 }
 
-// ✅ OTP Send via Gmail
+
 pub async fn send_otp_mail(to: &str, otp: &str) -> Result<(), String> {
     let email = Message::builder()
-        .from("Your App <ashokak1104@gmail.com>".parse().unwrap()) // 🔴 replace with your Gmail
+        .from("Your App <ashper916@gmail.com>".parse().unwrap()) // 🔴 replace with your Gmail
         .to(to.parse().unwrap())
         .subject("Your OTP Code")
         .header(header::ContentType::TEXT_PLAIN)
@@ -112,8 +112,8 @@ pub async fn send_otp_mail(to: &str, otp: &str) -> Result<(), String> {
         .map_err(|e| e.to_string())?;
 
     let creds = Credentials::new(
-        "ashokak1104@gmail.com".to_string(), // 🔴 replace with your Gmail
-        "abcd efgh ijkl mnop".to_string(),   // 🔴 replace with Gmail App Password
+        "ashper916@gmail.com".to_string(), // 🔴 replace with your Gmail
+        "scbr uloa lzjz teqv".to_string(),   // 🔴 replace with Gmail App Password
     );
 
     let mailer = SmtpTransport::relay("smtp.gmail.com")
@@ -185,7 +185,7 @@ pub async fn reset_password(
         )),
     }
 }
-use futures::TryStreamExt; // <-- import this
+use futures::TryStreamExt;
 
 pub async fn get_all_patients(
     State(state): State<AppState>,
