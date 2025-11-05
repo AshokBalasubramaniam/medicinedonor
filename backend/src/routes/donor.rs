@@ -70,7 +70,7 @@ pub async fn donor_login(
 
     // Build response (exclude password)
     let user_resp = json!({
-        "id": donor.id.map(|oid| oid.to_hex()),
+        "_id": donor.id.map(|oid| oid.to_hex()),
         "name": donor.name,
         "email": donor.email,
         "age": donor.age,

@@ -127,229 +127,285 @@ function PatientDetails() {
   );
 
   return (
-    <div className="pd-root">
-      <div className="pd-card" role="main" aria-labelledby="pd-heading">
-        <h2 id="pd-heading" className="pd-heading">Patient Details</h2>
+		<div className="pd-root">
+			<div className="pd-card" role="main" aria-labelledby="pd-heading">
+				<h2 id="pd-heading" className="pd-heading">
+					Patient Details
+				</h2>
 
-        <div className="pd-top">
-          <div className="pd-imageWrap">
-            <img
-              src={dpPreview || editpatient.image || 'https://cdn-icons-png.flaticon.com/512/847/847969.png'}
-              alt="Patient"
-              className="pd-image"
-            />
-            {!patient.approved && (
-              <label className="pd-fileLabel">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="pd-fileInput"
-                />
-                <span className="pd-fileText">Change photo</span>
-              </label>
-            )}
-          </div>
+				<div className="pd-top">
+					<div className="pd-imageWrap">
+						<img
+							src={
+								dpPreview ||
+								editpatient.image ||
+								"https://cdn-icons-png.flaticon.com/512/847/847969.png"
+							}
+							alt="Patient"
+							className="pd-image"
+						/>
+						{!patient.approved && (
+							<label className="pd-fileLabel">
+								<input
+									type="file"
+									accept="image/*"
+									onChange={handleFileChange}
+									className="pd-fileInput"
+								/>
+								<span className="pd-fileText">Change photo</span>
+							</label>
+						)}
+					</div>
 
-          <div className="pd-summary">
-            <div className="pd-name">{patient.name}</div>
-            <div className="pd-meta">
-              <span>{patient.age ? `${patient.age} yrs` : 'Age: -'}</span>
-              <span>{patient.gender || patient.sex || ''}</span>
-            </div>
-            <div className={`pd-approved ${patient.approved ? 'pd-yes' : 'pd-no'}`}>
-              {patient.approved ? '✅ Approved' : '❌ Not approved'}
-            </div>
-            <div className="pd-actions">
-              {!patient.approved ? (
-                <button
-                  className="pd-saveBtn"
-                  onClick={() => {
-                    // focus first editable input for convenience
-                    const el = document.querySelector('.pd-field input, .pd-field select');
-                    if (el) el.focus();
-                  }}
-                >
-                  Edit
-                </button>
-              ) : null}
+					<div className="pd-summary">
+						<div className="pd-name">{patient.name}</div>
+						<div className="pd-meta">
+							<span>{patient.age ? `${patient.age} yrs` : "Age: -"}</span>
+							<span>{patient.gender || patient.sex || ""}</span>
+						</div>
+						<div
+							className={`pd-approved ${patient.approved ? "pd-yes" : "pd-no"}`}
+						>
+							{patient.approved ? "✅ Approved" : "❌ Not approved"}
+						</div>
+						<div className="pd-actions">
+							{!patient.approved ? (
+								<button
+									className="pd-saveBtn"
+									onClick={() => {
+										// focus first editable input for convenience
+										const el = document.querySelector(
+											".pd-field input, .pd-field select"
+										);
+										if (el) el.focus();
+									}}
+								>
+									Edit
+								</button>
+							) : null}
 
-              <button
-                className="pd-logout"
-                onClick={() => {
-                  dispatch(logout());
-                  navigate('/patient');
-                }}
-                aria-label="Logout"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
+							<button
+								className="pd-logout"
+								onClick={() => {
+									dispatch(logout());
+									navigate("/patient");
+								}}
+								aria-label="Logout"
+							>
+								Logout
+							</button>
+						</div>
+					</div>
+				</div>
 
-        <form className="pd-form" onSubmit={handleSubmit}>
-          {/* Responsive grid of inputs */}
-          <div className="pd-grid">
-            <div className="pd-field">
-              <label className="pd-label" htmlFor="name">Name</label>
-              <input
-                id="name"
-                type="text"
-                className="pd-input"
-                value={editpatient.name}
-                onChange={(e) => setEditPatient({ ...editpatient, name: e.target.value })}
-                disabled={patient.approved}
-                required
-              />
-            </div>
-            <div className='pd-field'>
-              <label className='pd-label' htmlFor='id'>id</label>
-            {patient.id}
+				<form className="pd-form" onSubmit={handleSubmit}>
+					{/* Responsive grid of inputs */}
+					<div className="pd-grid">
+						<div className="pd-field">
+							<label className="pd-label" htmlFor="name">
+								Name
+							</label>
+							<input
+								id="name"
+								type="text"
+								className="pd-input"
+								value={editpatient.name}
+								onChange={(e) =>
+									setEditPatient({ ...editpatient, name: e.target.value })
+								}
+								disabled={patient.approved}
+								required
+							/>
+						</div>
+						<div className="pd-field">
+							<label className="pd-label" htmlFor="id">
+								id
+							</label>
+							{patient.id}
+						</div>
 
-            </div>
+						<div className="pd-field">
+							<label className="pd-label" htmlFor="email">
+								Email
+							</label>
+							<input
+								id="email"
+								type="email"
+								className="pd-input"
+								value={editpatient.email}
+								onChange={(e) =>
+									setEditPatient({ ...editpatient, email: e.target.value })
+								}
+								disabled
+								required
+							/>
+						</div>
 
-            <div className="pd-field">
-              <label className="pd-label" htmlFor="email">Email</label>
-              <input
-                id="email"
-                type="email"
-                className="pd-input"
-                value={editpatient.email}
-                onChange={(e) => setEditPatient({ ...editpatient, email: e.target.value })}
-                disabled
-                required
-              />
-            </div>
+						<div className="pd-field">
+							<label className="pd-label" htmlFor="age">
+								Age
+							</label>
+							<input
+								id="age"
+								type="number"
+								className="pd-input"
+								value={editpatient.age}
+								onChange={(e) =>
+									setEditPatient({ ...editpatient, age: e.target.value })
+								}
+								disabled={patient.approved}
+							/>
+						</div>
 
-            <div className="pd-field">
-              <label className="pd-label" htmlFor="age">Age</label>
-              <input
-                id="age"
-                type="number"
-                className="pd-input"
-                value={editpatient.age}
-                onChange={(e) => setEditPatient({ ...editpatient, age: e.target.value })}
-                disabled={patient.approved}
-              />
-            </div>
+						<div className="pd-field">
+							<label className="pd-label" htmlFor="mobile">
+								Mobile
+							</label>
+							<input
+								id="mobile"
+								type="tel"
+								className="pd-input"
+								value={editpatient.mobile}
+								onChange={(e) =>
+									setEditPatient({ ...editpatient, mobile: e.target.value })
+								}
+								disabled={patient.approved}
+							/>
+						</div>
 
-            <div className="pd-field">
-              <label className="pd-label" htmlFor="mobile">Mobile</label>
-              <input
-                id="mobile"
-                type="tel"
-                className="pd-input"
-                value={editpatient.mobile}
-                onChange={(e) => setEditPatient({ ...editpatient, mobile: e.target.value })}
-                disabled={patient.approved}
-              />
-            </div>
+						<div className="pd-field">
+							<label className="pd-label" htmlFor="sex">
+								Sex
+							</label>
+							<select
+								id="sex"
+								className="pd-input"
+								value={editpatient.sex || ""}
+								onChange={(e) =>
+									setEditPatient({ ...editpatient, sex: e.target.value })
+								}
+								disabled={patient.approved}
+							>
+								<option value="">Select</option>
+								<option value="Male">Male</option>
+								<option value="Female">Female</option>
+								<option value="Other">Other</option>
+							</select>
+						</div>
 
-            
+						<div className="pd-field">
+							<label className="pd-label" htmlFor="relationshipstatus">
+								Relationship
+							</label>
+							<select
+								id="relationshipstatus"
+								className="pd-input"
+								value={editpatient.relationshipstatus || ""}
+								onChange={(e) =>
+									setEditPatient({
+										...editpatient,
+										relationshipstatus: e.target.value,
+									})
+								}
+								disabled={patient.approved}
+							>
+								<option value="">
+									{!patient.relationship
+										? "Select relationship"
+										: patient.relationship}
+								</option>
+								<option value="Single">Single</option>
+								<option value="Married">Married</option>
+							</select>
+						</div>
 
+						{/* Read-only blocks for long info */}
+						<div className="pd-field full">
+							<label className="pd-label">Disease</label>
+							<textarea
+								className="pd-textarea"
+								value={patient.disease || ""}
+								disabled
+							/>
+						</div>
 
-            <div className="pd-field">
-              <label className="pd-label" htmlFor="sex">Sex</label>
-              <select
-                id="sex"
-                className="pd-input"
-                value={editpatient.sex || ''}
-                onChange={(e) => setEditPatient({ ...editpatient, sex: e.target.value })}
-                disabled={patient.approved}
-              >
-                <option value="">Select</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
+						<div className="pd-field full">
+							<label className="pd-label">Medicines</label>
+							<textarea
+								className="pd-textarea"
+								value={patient.medicines || ""}
+								disabled={patient.approved}
+							/>
+						</div>
 
-            <div className="pd-field">
-              <label className="pd-label" htmlFor="relationshipstatus">Relationship</label>
-              <select
-                id="relationshipstatus"
-                className="pd-input"
-                value={editpatient.relationshipstatus || ''}
-                onChange={(e) => setEditPatient({ ...editpatient, relationshipstatus: e.target.value })}
-                disabled={patient.approved}
-              >
-                <option value="">Select</option>
-                <option value="Single">Single</option>
-                <option value="Married">Married</option>
-              </select>
-            </div>
+						<div className="pd-field">
+							<label className="pd-label">Admission</label>
+							<div className="pd-read">{patient.admissiondate || "-"}</div>
+						</div>
 
-            {/* Read-only blocks for long info */}
-            <div className="pd-field full">
-              <label className="pd-label">Disease</label>
-              <textarea className="pd-textarea" value={patient.disease || ''} disabled />
-            </div>
+						<div className="pd-field">
+							<label className="pd-label">Discharge</label>
+							<div className="pd-read">{patient.dischargedate || "-"} </div>
+						</div>
 
-            <div className="pd-field full">
-              <label className="pd-label">Medicines</label>
-              <textarea className="pd-textarea" value={patient.medicines || ''}  disabled={patient.approved}/>
-            </div>
+						<div className="pd-field full">
+							<label className="pd-label">Address</label>
+							<textarea
+								className="pd-textarea"
+								value={patient.address || ""}
+								disabled={patient.approved}
+							/>
+						</div>
 
-            <div className="pd-field">
-              <label className="pd-label">Admission</label>
-              <div className="pd-read">{patient.admissiondate || '-'}</div>
-            </div>
+						<div className="pd-field">
+							<label className="pd-label">Aadhar</label>
+							<div className="pd-read">{patient.aadharno}</div>
+						</div>
 
-            <div className="pd-field">
-              <label className="pd-label">Discharge</label>
-              <div className="pd-read">{patient.dischargedate || '-'} </div>
-            </div>
+						<div className="pd-field">
+							<label className="pd-label">PAN</label>
+							<div className="pd-read">{patient.panno}</div>
+						</div>
 
-            <div className="pd-field full">
-              <label className="pd-label">Address</label>
-              <textarea className="pd-textarea" value={patient.address || ''} disabled={patient.approved}/>
-            </div>
+						<div className="pd-field">
+							<label className="pd-label">Emergency Contact</label>
+							<div className="pd-read">
+								{patient.emergencyContact || "-"} disabled={patient.approved}
+							</div>
+						</div>
 
-            <div className="pd-field">
-              <label className="pd-label">Aadhar</label>
-              <div className="pd-read">{patient.aadhar || '-'} disabled={patient.approved}</div>
-            </div>
+						<div className="pd-field">
+							<label className="pd-label">Zone</label>
+							<div className="pd-read">{patient.zone || "-"}</div>
+						</div>
 
-            <div className="pd-field">
-              <label className="pd-label">PAN</label>
-              <div className="pd-read">{patient.pan || '-'} disabled={patient.approved}</div>
-            </div>
+						<div className="pd-field">
+							<label className="pd-label">Hospital</label>
+							<div className="pd-read">
+								{patient.hospitalname || patient.hospital || "-"}
+							</div>
+						</div>
+					</div>
 
-            <div className="pd-field">
-              <label className="pd-label">Emergency Contact</label>
-              <div className="pd-read">{patient.emergencyContact || '-'} disabled={patient.approved}</div>
-            </div>
+					{/* Save button */}
+					{!patient.approved && (
+						<div className="pd-actionsBottom">
+							<button type="submit" className="pd-submit" disabled={loading}>
+								{loading ? "Saving…" : "Save Changes"}
+							</button>
+						</div>
+					)}
+				</form>
 
-            <div className="pd-field">
-              <label className="pd-label">Zone</label>
-              <div className="pd-read">{patient.zone || '-'}</div>
-            </div>
+				<div className="pd-footer">
+					<div className="pd-approvedText">
+						Approved: {patient.approved ? "✅ Yes" : "❌ No"}
+					</div>
+				</div>
+			</div>
 
-            <div className="pd-field">
-              <label className="pd-label">Hospital</label>
-              <div className="pd-read">{patient.hospitalname || patient.hospital || '-'}</div>
-            </div>
-
-          </div>
-
-          {/* Save button */}
-          {!patient.approved && (
-            <div className="pd-actionsBottom">
-              <button type="submit" className="pd-submit" disabled={loading}>
-                {loading ? 'Saving…' : 'Save Changes'}
-              </button>
-            </div>
-          )}
-        </form>
-
-        <div className="pd-footer">
-          <div className="pd-approvedText">Approved: {patient.approved ? '✅ Yes' : '❌ No'}</div>
-        </div>
-      </div>
-
-      {/* Internal CSS */}
-      <style>{`
+			{/* Internal CSS */}
+			<style>{`
         /* Root and card */
         .pd-root {
           min-height: 100vh;
@@ -496,8 +552,8 @@ function PatientDetails() {
         }
 
       `}</style>
-    </div>
-  );
+		</div>
+	);
 }
 
 export default PatientDetails;

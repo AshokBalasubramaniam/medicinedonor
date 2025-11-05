@@ -6,8 +6,9 @@ pub mod pateind_dataget;
 pub mod patient;
 pub mod payment;
 pub mod update_patient;
+pub mod Donation;
 
-use crate::state::AppState;
+use crate::{routes::Donation::donation_routes, state::AppState};
 use axum::Router;
 
 use admin::admin_routes;
@@ -20,8 +21,10 @@ pub fn routes(state: AppState) -> Router {
     Router::new()
         .nest("/api", admin_routes(state.clone()))
         .nest("/api", patient_routes(state.clone()))
-        .nest("/api", doctor_routes(state.clone()))
+         .nest("/api", doctor_routes(state.clone()))
         .nest("/api", donor_routes(state.clone()))
+        .nest("/api", donation_routes(state.clone()))
+
 }
 
 pub fn payment_route() -> Router {
@@ -29,6 +32,7 @@ pub fn payment_route() -> Router {
         razor_key_id: "rzp_test_RKFCfniNFmF9k7".to_string(), // test key
         razor_key_secret: "1wQ9eNThXcVwXT5lcNwm81Q4".to_string(),
         http_client: reqwest::Client::new(), 
+        
     };
 
     Router::new().nest("/api", payment_routes(payment_state))

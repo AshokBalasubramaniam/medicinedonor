@@ -1,7 +1,7 @@
-import axios from 'axios';
+import axios from "axios";
 
 const API = axios.create({
-  baseURL: '/api',
+  baseURL: "/api",
 });
 
 // Normalize ALL errors so callers always get { error, status }
@@ -11,9 +11,9 @@ API.interceptors.response.use(
     const status = error?.response?.status;
     const data = error?.response?.data;
 
-    let normalized = { status, error: 'Network error' };
+    let normalized = { status, error: "Network error" };
     if (data) {
-      if (typeof data === 'string') normalized = { status, error: data };
+      if (typeof data === "string") normalized = { status, error: data };
       else if (data.error) normalized = { status, error: data.error };
       else if (data.message) normalized = { status, error: data.message };
       else normalized = { status, error: JSON.stringify(data) };
@@ -24,36 +24,37 @@ API.interceptors.response.use(
 
 export const loginPatient = async (email, password) => {
   const res = await API.post(
-    '/patientlogin',
+    "/patientlogin",
     { email, password },
-    { headers: { 'Content-Type': 'application/json' } } // ✅ JSON only
+    { headers: { "Content-Type": "application/json" } } // ✅ JSON only
   );
   return res.data;
 };
 export const adminLogin = async (email, password) => {
   const res = await API.post(
-    '/adminpage',
+    "/adminpage",
     { email, password },
-    { headers: { 'Content-Type': 'application/json' } }
+    { headers: { "Content-Type": "application/json" } }
   );
   return res.data; // <-- consistent with loginPatient
 };
 
 export const admingetallpatientdetails = async (token) => {
-  const res = await API.get('/adminpage/getpatients', {
+  const res = await API.get("/adminpage/getpatients", {
     headers: { Authorization: `Bearer ${token}` },
   });
   return res.data;
 };
 export const getPatientDetails = async (token) => {
-  const res = await API.get('/patientdetails', {
+  const res = await API.get("/patientdetails", {
     headers: { Authorization: `Bearer ${token}` },
   });
   return res.data;
 };
 
+console.log(getPatientDetails, "hiuiu");
 export const updatePatientDetails = async (token, updatedData) => {
-  const res = await API.put('/patientdetails/update', updatedData, {
+  const res = await API.put("/patientdetails/update", updatedData, {
     headers: { Authorization: `Bearer ${token}` },
     // ❌ Do NOT set Content-Type → browser will add boundary
   });
@@ -62,47 +63,47 @@ export const updatePatientDetails = async (token, updatedData) => {
 
 export const loginDonor = async (email, password) => {
   const res = await API.post(
-    '/donorlogin',
+    "/donorlogin",
     { email, password },
-    { headers: { 'Content-Type': 'application/json' } }
+    { headers: { "Content-Type": "application/json" } }
   );
   return res.data;
 };
 
 export const registerPatient = async (patientData) => {
-  const res = await API.post('/patient/register', patientData, {
-    headers: { 'Content-Type': 'application/json' },
+  const res = await API.post("/patient/register", patientData, {
+    headers: { "Content-Type": "application/json" },
   });
   return res.data;
 };
 
 export const registerDonor = async (donorData) => {
-  const res = await API.post('/donor/register', donorData, {
-    headers: { 'Content-Type': 'application/json' },
+  const res = await API.post("/donor/register", donorData, {
+    headers: { "Content-Type": "application/json" },
   });
   return res.data;
 };
 
 export const adminForgetPassword = async (email) => {
   const res = await API.post(
-    '/adminpage/forget',
+    "/adminpage/forget",
     { email },
-    { headers: { 'Content-Type': 'application/json' } }
+    { headers: { "Content-Type": "application/json" } }
   );
   return res;
 };
 
 export const adminResetPassword = async (email, otp, newPassword) => {
   const res = await API.post(
-    '/adminpage/reset',
+    "/adminpage/reset",
     { email, otp, new_password: newPassword },
-    { headers: { 'Content-Type': 'application/json' } }
+    { headers: { "Content-Type": "application/json" } }
   );
   return res;
 };
 
 export const admingetpatientdetails = async () => {
-  const res = await API.get('/adminpage/patients');
+  const res = await API.get("/adminpage/patients");
   return res.data;
 };
 
@@ -118,10 +119,11 @@ export const updatePatient = async (id, data) => {
 };
 
 export const registerdoctor = async (payload, token) => {
-  const res = await axios.post('/api/admin/registerdoctor', payload, {
+  const res = await axios.post("/api/admin/registerdoctor", payload, {
     headers: {
       Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',newamountupdate
+      "Content-Type": "application/json",
+      newamountupdate,
     },
   });
   return res.data;
@@ -131,20 +133,20 @@ export const adminUpdatePatient = async (token, id, payload) => {
   const res = await axios.put(`/api/admin/updatepatient/${id}`, payload, {
     headers: {
       Authorization: `Bearer ${token}`,
-      'Content-Type': 'multipart/form-data',
+      "Content-Type": "multipart/form-data",
     },
   });
   return res.data;
 };
 console.log(adminUpdatePatient);
 
-const BASE = '/api';
+const BASE = "/api";
 
 export async function createOrder(token, amount_rupees) {
   const res = await fetch(`${BASE}/create_order`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({ amount_rupees }),
@@ -155,9 +157,9 @@ export async function createOrder(token, amount_rupees) {
 
 export async function verifyPayment(token, payload) {
   const res = await fetch(`${BASE}/verify_payment`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(payload),
@@ -165,3 +167,21 @@ export async function verifyPayment(token, payload) {
   if (!res.ok) throw await res.json();
   return await res.json();
 }
+
+export const getAllPayments = async (token) => {
+  try {
+    const res = await API.get("/getdonation", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return res.data; // ✅ returns parsed JSON automatically
+  } catch (error) {
+    console.error("Error fetching payments:", error);
+    // Your interceptor already formats errors as { status, error }
+    return {
+      error: error.error || "Failed to fetch payments",
+      status: error.status,
+    };
+  }
+};

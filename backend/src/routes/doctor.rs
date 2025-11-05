@@ -10,7 +10,7 @@ use serde_json::json;
 use crate::{models::doctor::Doctor, state::AppState};
 
 pub fn doctor_routes(state: AppState) -> Router {
-    println!("Setting up doctor routes");
+   
     Router::new()
         .route("/admin/registerdoctor", post(register_doctor_handler))
         .with_state(state)
@@ -20,7 +20,7 @@ pub async fn register_doctor_handler(
     State(state): State<AppState>,
     Json(payload): Json<Doctor>,
 ) -> (StatusCode, Json<serde_json::Value>) {
-    println!("Received doctor registration payload: {:?}", payload);
+   
     let coll = state.db.collection::<Doctor>("Doctors");
 
     let new_doctor = Doctor {
@@ -36,7 +36,6 @@ pub async fn register_doctor_handler(
         maxpatients: payload.maxpatients,
         profilephoto: payload.profilephoto.clone(),
     };
-println!("Inserting new doctor into DB: {:?}", new_doctor);
     match coll.insert_one(new_doctor, None).await {
         Ok(res) => (
             StatusCode::CREATED,

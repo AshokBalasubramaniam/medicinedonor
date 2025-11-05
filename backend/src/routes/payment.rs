@@ -9,6 +9,7 @@ use sha2::Sha256;
 use std::time::{SystemTime, UNIX_EPOCH};
 use crate::state::get_db;
 use crate::models::patient::Patient;
+use crate::routes::Donation::save_donation;
 
 type HmacSha256 = Hmac<Sha256>;
 
@@ -17,6 +18,7 @@ pub struct Payment {
     pub razor_key_id: String,
     pub razor_key_secret: String,
     pub http_client: HttpClient,
+   
 }
 
 #[derive(Deserialize)]
@@ -30,6 +32,9 @@ pub struct VerifyPayload {
     pub razorpay_payment_id: String,
     pub razorpay_signature: String,
     pub patient_id: String,  
+    pub patient_name:String,
+    pub donor_id:String,
+    pub donor_name:String,
     pub amount: i64,       
 }
 
@@ -101,7 +106,7 @@ pub async fn create_order(
                             .into_response()
                     }
                     Err(err) => {
-                        eprintln!("❌ Failed to parse Razorpay response: {:?}", err);
+                        
                         (
                             StatusCode::INTERNAL_SERVER_ERROR,
                             Json(json!({"error":"failed to parse razorpay response"})),
@@ -111,12 +116,12 @@ pub async fn create_order(
                 }
             } else {
                 let text = resp.text().await.unwrap_or_else(|_| "unknown error".into());
-                eprintln!("❌ Razorpay returned error: {}", text);
+               
                 (StatusCode::BAD_GATEWAY, Json(json!({"error": text}))).into_response()
             }
         }
         Err(err) => {
-            eprintln!("❌ Razorpay API call failed: {:?}", err);
+            
             (
                 StatusCode::BAD_GATEWAY,
                 Json(json!({"error":"razorpay api request failed"})),
@@ -132,43 +137,58 @@ pub async fn verify_payment(
     State(state): State<Payment>,
     Json(payload): Json<VerifyPayload>,
 ) -> impl IntoResponse {
+    // Step 0: Verify signature
     let mut mac = HmacSha256::new_from_slice(state.razor_key_secret.as_bytes())
         .expect("HMAC can take key of any size");
 
-    let data = format!(
-        "{}|{}",
-        payload.razorpay_order_id, payload.razorpay_payment_id
-    );
+    let data = format!("{}|{}", payload.razorpay_order_id, payload.razorpay_payment_id);
     mac.update(data.as_bytes());
-
     let generated_signature = hex::encode(mac.finalize().into_bytes());
 
     if generated_signature != payload.razorpay_signature {
         return (
             StatusCode::BAD_REQUEST,
             Json(json!({"error": "invalid signature"})),
-        )
-            .into_response();
+        ).into_response();
     }
 
-    // ✅ Update MongoDB Patient record
-    match update_patient_payment(&payload.patient_id, &payload.razorpay_payment_id, payload.amount).await
-    {
-        Ok(_) => (
-            StatusCode::OK,
-            Json(json!({"status": "payment verified and updated in patient DB"})),
-        )
-            .into_response(),
-        Err(err) => {
-            eprintln!("❌ Failed to update patient DB: {:?}", err);
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Json(json!({"error": "payment verified but DB update failed"})),
-            )
-                .into_response()
-        }
+    // Step 1: Update patient DB, log error but don't fail payment
+    let patient_update_result = update_patient_payment(
+        &payload.patient_id,
+        &payload.razorpay_payment_id,
+        payload.amount,
+    ).await;
+
+    if let Err(err) = &patient_update_result {
+        
     }
+
+    // Step 2: Save donation, log error but don't fail payment
+    let donation_result = save_donation(
+                   // <-- AppState needed here
+        &payload.donor_name,                        // donor_name
+        &payload.donor_id,     // donor_id
+        &payload.patient_name,                        // patient_name
+        &payload.patient_id,            // patient_id
+        &payload.razorpay_payment_id,   // payment_id
+        payload.amount,                 // amount
+    ).await;
+
+    if let Err(err) = &donation_result {
+       
+    }
+
+    // Step 3: Return overall response
+    let mut response = json!({"status": "payment verified"});
+    if patient_update_result.is_err() || donation_result.is_err() {
+        response["warning"] = json!("DB update or donation save failed, but payment verified");
+    } else {
+        response["message"] = json!("Patient updated and donation saved successfully");
+    }
+
+    (StatusCode::OK, Json(response)).into_response()
 }
+
 
 // --------------------- MongoDB Update ---------------------
 
@@ -182,27 +202,20 @@ pub async fn update_patient_payment(
 
     let obj_id = ObjectId::parse_str(patient_id)?;
 
-    // Use an aggregation-style update to recalc balance_amount
-    coll.update_one(
-        doc! { "_id": obj_id },
-        vec![
-            doc! {
-                "$set": {
-                    "paid_amount": { "$add": ["$paid_amount", amount] },
-                }
-            },
-            doc! {
-                "$set": {
-                    "balance_amount": { "$subtract": ["$amount", "$paid_amount"] },
-                    "last_payment_id": payment_id
-                }
-            
-            },
-            
-        ],
-        None,
-    )
-    .await?;
+coll.update_one(
+    doc! { "_id": obj_id },
+    vec![
+        doc! {
+            "$set": {
+                "paid_amount": { "$add": [ { "$ifNull": ["$paid_amount", 0] }, amount ] },
+                "balance_amount": { "$subtract": ["$amount", { "$add": [ { "$ifNull": ["$paid_amount", 0] }, amount ] }] },
+                "last_payment_id": payment_id,
+            }
+        }
+    ],
+    None,
+)
+.await?;
 
     Ok(())
 }

@@ -123,11 +123,11 @@ pub async fn send_otp_mail(to: &str, otp: &str) -> Result<(), String> {
 
     match mailer.send(&email) {
         Ok(_) => {
-            println!("✅ OTP sent to {}", to);
+           
             Ok(())
         }
         Err(e) => {
-            println!("❌ Could not send OTP: {:?}", e);
+           
             Err(e.to_string())
         }
     }
@@ -223,8 +223,7 @@ pub async fn get_all_patients(
             "image": patient.image,
         }));
     }
-    println!("Patients: {:#?}", patients);
-
+  
     Ok(Json(patients))
 }
 
