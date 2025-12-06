@@ -1,9 +1,490 @@
-// src/components/patient/PatientDetails.jsx
+// Professional Medical Patient Details Component
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../store/authSlice';
 import { useNavigate } from 'react-router-dom';
 import { getPatientDetails, updatePatientDetails } from '../../api';
+
+// Professional Medical UI Styles
+const styles = {
+  // Main Container
+  container: {
+    fontFamily: "'Inter', 'Segoe UI', 'Roboto', sans-serif",
+    backgroundColor: "#f8fafc",
+    minHeight: "100vh",
+    color: "#1e293b",
+  },
+
+  // Header/Navigation
+  header: {
+    background: "linear-gradient(135deg, #0f766e 0%, #059669 100%)",
+    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+    position: "sticky",
+    top: 0,
+    zIndex: 50,
+  },
+  headerContent: {
+    maxWidth: "1200px",
+    margin: "0 auto",
+    padding: "0 1rem",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    height: "72px",
+  },
+  logo: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.75rem",
+  },
+  logoIcon: {
+    width: "40px",
+    height: "40px",
+    backgroundColor: "#ffffff",
+    borderRadius: "12px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "20px",
+    color: "#059669",
+    fontWeight: "bold",
+  },
+  logoText: {
+    fontSize: "24px",
+    fontWeight: "700",
+    color: "#ffffff",
+    margin: 0,
+  },
+  userInfo: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5rem",
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    padding: "0.5rem 1rem",
+    borderRadius: "24px",
+    backdropFilter: "blur(10px)",
+  },
+  userInfoText: {
+    color: "#ffffff",
+    fontSize: "14px",
+    fontWeight: "500",
+  },
+
+  // Main Content
+  mainContent: {
+    maxWidth: "1200px",
+    margin: "0 auto",
+    padding: "2rem 1rem",
+  },
+
+  // Patient Header Section
+  patientHeader: {
+    backgroundColor: "#ffffff",
+    borderRadius: "16px",
+    padding: "2rem",
+    marginBottom: "2rem",
+    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06)",
+    border: "1px solid #e2e8f0",
+  },
+  patientHeaderContent: {
+    display: "flex",
+    alignItems: "center",
+    gap: "2rem",
+    flexWrap: "wrap",
+  },
+  patientAvatar: {
+    position: "relative",
+  },
+  avatarImage: {
+    width: "120px",
+    height: "120px",
+    borderRadius: "16px",
+    objectFit: "cover",
+    border: "4px solid #e2e8f0",
+    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+  },
+  avatarBadge: {
+    position: "absolute",
+    top: "-8px",
+    right: "-8px",
+    width: "32px",
+    height: "32px",
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "16px",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+  },
+  statusApproved: {
+    backgroundColor: "#10b981",
+    color: "#ffffff",
+  },
+  statusPending: {
+    backgroundColor: "#f59e0b",
+    color: "#ffffff",
+  },
+  patientInfo: {
+    flex: 1,
+    minWidth: "300px",
+  },
+  patientName: {
+    fontSize: "2rem",
+    fontWeight: "700",
+    color: "#1e293b",
+    marginBottom: "0.5rem",
+    lineHeight: "1.2",
+  },
+  patientMeta: {
+    display: "flex",
+    gap: "2rem",
+    marginBottom: "1rem",
+    flexWrap: "wrap",
+  },
+  metaItem: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5rem",
+    color: "#64748b",
+    fontSize: "0.875rem",
+  },
+  metaIcon: {
+    color: "#059669",
+    fontSize: "16px",
+  },
+  patientId: {
+    backgroundColor: "#f1f5f9",
+    color: "#475569",
+    padding: "0.25rem 0.75rem",
+    borderRadius: "20px",
+    fontSize: "0.75rem",
+    fontWeight: "600",
+    display: "inline-block",
+    marginBottom: "1rem",
+    textTransform: "uppercase",
+    letterSpacing: "0.05em",
+  },
+  patientActions: {
+    display: "flex",
+    gap: "1rem",
+    flexWrap: "wrap",
+  },
+  actionButton: {
+    padding: "0.75rem 1.5rem",
+    borderRadius: "8px",
+    fontSize: "0.875rem",
+    fontWeight: "600",
+    cursor: "pointer",
+    transition: "all 0.2s ease-in-out",
+    border: "none",
+    textTransform: "uppercase",
+    letterSpacing: "0.05em",
+  },
+  primaryButton: {
+    background: "linear-gradient(135deg, #059669 0%, #047857 100%)",
+    color: "#ffffff",
+    boxShadow: "0 4px 12px rgba(5, 150, 105, 0.3)",
+  },
+  primaryButtonHover: {
+    transform: "translateY(-1px)",
+    boxShadow: "0 6px 20px rgba(5, 150, 105, 0.4)",
+  },
+  secondaryButton: {
+    backgroundColor: "#ffffff",
+    color: "#64748b",
+    border: "2px solid #e2e8f0",
+  },
+  secondaryButtonHover: {
+    borderColor: "#cbd5e1",
+    backgroundColor: "#f8fafc",
+  },
+
+  // Content Grid
+  contentGrid: {
+    display: "grid",
+    gridTemplateColumns: "1fr",
+    gap: "2rem",
+  },
+  "@media (min-width: 1024px)": {
+    contentGrid: {
+      gridTemplateColumns: "2fr 1fr",
+    },
+  },
+
+  // Information Cards
+  infoCard: {
+    backgroundColor: "#ffffff",
+    borderRadius: "12px",
+    padding: "1.5rem",
+    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06)",
+    border: "1px solid #e2e8f0",
+  },
+  cardHeader: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.75rem",
+    marginBottom: "1rem",
+    paddingBottom: "0.75rem",
+    borderBottom: "2px solid #f1f5f9",
+  },
+  cardIcon: {
+    width: "40px",
+    height: "40px",
+    borderRadius: "10px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "18px",
+  },
+  cardTitle: {
+    fontSize: "1.25rem",
+    fontWeight: "700",
+    color: "#1e293b",
+    margin: 0,
+  },
+  cardContent: {
+    display: "grid",
+    gridTemplateColumns: "1fr",
+    gap: "1rem",
+  },
+  "@media (min-width: 640px)": {
+    cardContent: {
+      gridTemplateColumns: "repeat(2, 1fr)",
+    },
+  },
+
+  // Form Fields
+  formGroup: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "0.5rem",
+  },
+  formLabel: {
+    fontSize: "0.875rem",
+    fontWeight: "600",
+    color: "#374151",
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5rem",
+  },
+  formInput: {
+    width: "100%",
+    padding: "0.75rem 1rem",
+    border: "2px solid #e2e8f0",
+    borderRadius: "8px",
+    fontSize: "0.875rem",
+    color: "#1e293b",
+    backgroundColor: "#ffffff",
+    outline: "none",
+    transition: "all 0.2s ease-in-out",
+    fontFamily: "inherit",
+  },
+  formInputFocus: {
+    borderColor: "#059669",
+    boxShadow: "0 0 0 3px rgba(5, 150, 105, 0.1)",
+  },
+  formSelect: {
+    ...this?.formInput,
+    cursor: "pointer",
+  },
+  formTextarea: {
+    ...this?.formInput,
+    minHeight: "100px",
+    resize: "vertical",
+  },
+  readOnlyField: {
+    backgroundColor: "#f8fafc",
+    borderColor: "#e2e8f0",
+    color: "#64748b",
+    cursor: "not-allowed",
+  },
+
+  // Medical History Section
+  medicalHistory: {
+    backgroundColor: "#ffffff",
+    borderRadius: "12px",
+    padding: "1.5rem",
+    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06)",
+    border: "1px solid #e2e8f0",
+  },
+  historyHeader: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.75rem",
+    marginBottom: "1rem",
+    paddingBottom: "0.75rem",
+    borderBottom: "2px solid #f1f5f9",
+  },
+  historyIcon: {
+    width: "40px",
+    height: "40px",
+    backgroundColor: "#fef3c7",
+    borderRadius: "10px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#d97706",
+    fontSize: "18px",
+  },
+  historyTitle: {
+    fontSize: "1.25rem",
+    fontWeight: "700",
+    color: "#1e293b",
+    margin: 0,
+  },
+  historyGrid: {
+    display: "grid",
+    gridTemplateColumns: "1fr",
+    gap: "1rem",
+  },
+  "@media (min-width: 640px)": {
+    historyGrid: {
+      gridTemplateColumns: "repeat(2, 1fr)",
+    },
+  },
+  historyItem: {
+    backgroundColor: "#f8fafc",
+    borderRadius: "8px",
+    padding: "1rem",
+    border: "1px solid #e2e8f0",
+  },
+  historyLabel: {
+    fontSize: "0.75rem",
+    color: "#64748b",
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: "0.05em",
+    marginBottom: "0.25rem",
+  },
+  historyValue: {
+    fontSize: "0.875rem",
+    color: "#1e293b",
+    fontWeight: "500",
+  },
+
+  // Status Cards
+  statusCard: {
+    backgroundColor: "#ffffff",
+    borderRadius: "12px",
+    padding: "1.5rem",
+    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06)",
+    border: "1px solid #e2e8f0",
+  },
+  statusHeader: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.75rem",
+    marginBottom: "1rem",
+  },
+  statusIcon: {
+    width: "40px",
+    height: "40px",
+    borderRadius: "10px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "18px",
+  },
+  statusTitle: {
+    fontSize: "1.25rem",
+    fontWeight: "700",
+    color: "#1e293b",
+    margin: 0,
+  },
+  statusBadge: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "0.5rem",
+    padding: "0.5rem 1rem",
+    borderRadius: "20px",
+    fontSize: "0.875rem",
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: "0.05em",
+  },
+  statusApproved: {
+    backgroundColor: "#f0fdf4",
+    color: "#166534",
+    border: "1px solid #bbf7d0",
+  },
+  statusPending: {
+    backgroundColor: "#fef3c7",
+    color: "#92400e",
+    border: "1px solid #fde68a",
+  },
+
+  // Loading States
+  loadingState: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "4rem 2rem",
+    textAlign: "center",
+  },
+  loadingSpinner: {
+    width: "48px",
+    height: "48px",
+    border: "4px solid #e2e8f0",
+    borderTop: "4px solid #059669",
+    borderRadius: "50%",
+    animation: "spin 1s linear infinite",
+    marginBottom: "1rem",
+  },
+  loadingText: {
+    fontSize: "1.125rem",
+    color: "#64748b",
+    fontWeight: "500",
+  },
+
+  // Error States
+  errorMessage: {
+    backgroundColor: "#fef2f2",
+    border: "1px solid #fecaca",
+    borderRadius: "8px",
+    padding: "1rem",
+    marginBottom: "1rem",
+    display: "flex",
+    alignItems: "center",
+    gap: "0.75rem",
+  },
+  errorIcon: {
+    color: "#dc2626",
+    fontSize: "20px",
+  },
+  errorText: {
+    fontSize: "0.875rem",
+    color: "#dc2626",
+    fontWeight: "500",
+    margin: 0,
+  },
+
+  // File Upload
+  fileUpload: {
+    marginTop: "1rem",
+  },
+  fileInput: {
+    display: "none",
+  },
+  fileLabel: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "0.5rem",
+    padding: "0.5rem 1rem",
+    backgroundColor: "#f1f5f9",
+    border: "2px dashed #cbd5e1",
+    borderRadius: "8px",
+    cursor: "pointer",
+    transition: "all 0.2s ease-in-out",
+    color: "#475569",
+    fontSize: "0.875rem",
+    fontWeight: "500",
+  },
+  fileLabelHover: {
+    backgroundColor: "#e2e8f0",
+    borderColor: "#94a3b8",
+  },
+};
 
 function PatientDetails() {
   const dispatch = useDispatch();
@@ -24,8 +505,11 @@ function PatientDetails() {
     relationshipstatus: '',
   });
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [dpFile, setDpFile] = useState(null);
   const [dpPreview, setDpPreview] = useState(null);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   useEffect(() => {
     if (!token) {
@@ -34,14 +518,20 @@ function PatientDetails() {
     }
 
     async function fetchPatient() {
+      setLoading(true);
+      setError('');
       try {
         const data = await getPatientDetails(token);
         setPatient(data);
       } catch (err) {
         console.error('Fetch details error:', err);
-        alert(err.error || 'Failed to fetch patient details');
-        dispatch(logout());
-        navigate('/patient');
+        setError(err.error || 'Failed to fetch patient details');
+        setTimeout(() => {
+          dispatch(logout());
+          navigate('/patient');
+        }, 3000);
+      } finally {
+        setLoading(false);
       }
     }
 
@@ -75,11 +565,70 @@ function PatientDetails() {
     }
   }, [patient]);
 
-  if (!patient) return <div className="pd-loading">Loading patient details…</div>;
+  // Helper functions
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Not set';
+    try {
+      return new Date(dateString).toLocaleDateString('en-IN', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch {
+      return dateString;
+    }
+  };
+
+  const getInitials = (name) => {
+    if (!name) return 'P';
+    return name
+      .split(' ')
+      .map(word => word.charAt(0))
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  if (loading && !patient) {
+    return (
+      <div style={styles.container}>
+        <div style={styles.loadingState}>
+          <div style={styles.loadingSpinner}></div>
+          <p style={styles.loadingText}>Loading patient information...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && !patient) {
+    return (
+      <div style={styles.container}>
+        <div style={styles.mainContent}>
+          <div style={styles.errorMessage}>
+            <span style={styles.errorIcon}>⚠️</span>
+            <p style={styles.errorText}>{error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!patient) {
+    return (
+      <div style={styles.container}>
+        <div style={styles.loadingState}>
+          <p style={styles.loadingText}>Patient data not available</p>
+        </div>
+      </div>
+    );
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setLoading(true);
+    setSaving(true);
+    setError('');
+    setSuccess('');
+
     try {
       const formData = new FormData();
       formData.append('id', editpatient.id);
@@ -97,463 +646,544 @@ function PatientDetails() {
       }
 
       const res = await updatePatientDetails(token, formData);
+      setSuccess(res.message || 'Patient details updated successfully!');
 
-      alert(res.message || 'Patient details updated successfully!');
       const updated = await getPatientDetails(token);
       setPatient(updated);
       if (updated.image) setDpPreview(updated.image);
     } catch (err) {
       console.error('Update error:', err);
-      alert(err.error || 'Failed to update patient details');
+      setError(err.error || 'Failed to update patient details');
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   }
 
   function handleFileChange(e) {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setError('Please select a valid image file');
+        return;
+      }
+      // Validate file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
+        setError('File size must be less than 5MB');
+        return;
+      }
+
       setDpFile(file);
       setDpPreview(URL.createObjectURL(file));
+      setError('');
     }
   }
 
-  // helper to render read-only field blocks
-  const ReadOnlyField = ({ label, value }) => (
-    <div className="pd-fo-row">
-      <label className="pd-label">{label}</label>
-      <div className="pd-read">{value ?? '-'}</div>
-    </div>
-  );
+  const handleInputChange = (field, value) => {
+    setEditPatient(prev => ({ ...prev, [field]: value }));
+    setError('');
+    setSuccess('');
+  };
 
   return (
-		<div className="pd-root">
-			<div className="pd-card" role="main" aria-labelledby="pd-heading">
-				<h2 id="pd-heading" className="pd-heading">
-					Patient Details
-				</h2>
+    <>
+      {/* CSS Animations */}
+      <style>
+        {`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          @media (min-width: 1024px) {
+            .content-grid { grid-template-columns: 2fr 1fr !important; }
+          }
+          @media (min-width: 640px) {
+            .card-content, .history-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          }
+        `}
+      </style>
 
-				<div className="pd-top">
-					<div className="pd-imageWrap">
-						<img
-							src={
-								dpPreview ||
-								editpatient.image ||
-								"https://cdn-icons-png.flaticon.com/512/847/847969.png"
-							}
-							alt="Patient"
-							className="pd-image"
-						/>
-						{!patient.approved && (
-							<label className="pd-fileLabel">
-								<input
-									type="file"
-									accept="image/*"
-									onChange={handleFileChange}
-									className="pd-fileInput"
-								/>
-								<span className="pd-fileText">Change photo</span>
-							</label>
-						)}
-					</div>
+      <div style={styles.container}>
+        {/* Header */}
+        <header style={styles.header}>
+          <div style={styles.headerContent}>
+            <div style={styles.logo}>
+              <div style={styles.logoIcon}>🏥</div>
+              <h1 style={styles.logoText}>Medical Portal</h1>
+            </div>
+            {patient && (
+              <div style={styles.userInfo}>
+                <div style={styles.userInfoText}>
+                  Patient ID: {patient.id || patient._id}
+                </div>
+              </div>
+            )}
+          </div>
+        </header>
 
-					<div className="pd-summary">
-						<div className="pd-name">{patient.name}</div>
-						<div className="pd-meta">
-							<span>{patient.age ? `${patient.age} yrs` : "Age: -"}</span>
-							<span>{patient.gender || patient.sex || ""}</span>
-						</div>
-						<div
-							className={`pd-approved ${patient.approved ? "pd-yes" : "pd-no"}`}
-						>
-							{patient.approved ? "✅ Approved" : "❌ Not approved"}
-						</div>
-						<div className="pd-actions">
-							{!patient.approved ? (
-								<button
-									className="pd-saveBtn"
-									onClick={() => {
-										// focus first editable input for convenience
-										const el = document.querySelector(
-											".pd-field input, .pd-field select"
-										);
-										if (el) el.focus();
-									}}
-								>
-									Edit
-								</button>
-							) : null}
+        <main style={styles.mainContent}>
+          {/* Patient Header Section */}
+          <section style={styles.patientHeader}>
+            <div style={styles.patientHeaderContent}>
+              <div style={styles.patientAvatar}>
+                <img
+                  src={dpPreview || editpatient.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(patient.name || 'Patient')}&background=059669&color=fff&size=120`}
+                  alt="Patient"
+                  style={styles.avatarImage}
+                />
+                <div style={{
+                  ...styles.avatarBadge,
+                  ...(patient.approved ? styles.statusApproved : styles.statusPending)
+                }}>
+                  {patient.approved ? '✓' : '⏳'}
+                </div>
+              </div>
 
-							<button
-								className="pd-logout"
-								onClick={() => {
-									dispatch(logout());
-									navigate("/patient");
-								}}
-								aria-label="Logout"
-							>
-								Logout
-							</button>
-						</div>
-					</div>
-				</div>
+              <div style={styles.patientInfo}>
+                <h1 style={styles.patientName}>{patient.name}</h1>
 
-				<form className="pd-form" onSubmit={handleSubmit}>
-					{/* Responsive grid of inputs */}
-					<div className="pd-grid">
-						<div className="pd-field">
-							<label className="pd-label" htmlFor="name">
-								Name
-							</label>
-							<input
-								id="name"
-								type="text"
-								className="pd-input"
-								value={editpatient.name}
-								onChange={(e) =>
-									setEditPatient({ ...editpatient, name: e.target.value })
-								}
-								disabled={patient.approved}
-								required
-							/>
-						</div>
-						<div className="pd-field">
-							<label className="pd-label" htmlFor="id">
-								id
-							</label>
-							{patient.id}
-						</div>
+                <div style={styles.patientMeta}>
+                  <div style={styles.metaItem}>
+                    <span style={styles.metaIcon}>📅</span>
+                    <span>Age: {patient.age || 'Not specified'}</span>
+                  </div>
+                  <div style={styles.metaItem}>
+                    <span style={styles.metaIcon}>👤</span>
+                    <span>{patient.sex || patient.gender || 'Gender not specified'}</span>
+                  </div>
+                  <div style={styles.metaItem}>
+                    <span style={styles.metaIcon}>📞</span>
+                    <span>{patient.mobile || 'Phone not provided'}</span>
+                  </div>
+                </div>
 
-						<div className="pd-field">
-							<label className="pd-label" htmlFor="email">
-								Email
-							</label>
-							<input
-								id="email"
-								type="email"
-								className="pd-input"
-								value={editpatient.email}
-								onChange={(e) =>
-									setEditPatient({ ...editpatient, email: e.target.value })
-								}
-								disabled
-								required
-							/>
-						</div>
+                <div style={styles.patientId}>
+                  Patient ID: {patient.id || patient._id}
+                </div>
 
-						<div className="pd-field">
-							<label className="pd-label" htmlFor="age">
-								Age
-							</label>
-							<input
-								id="age"
-								type="number"
-								className="pd-input"
-								value={editpatient.age}
-								onChange={(e) =>
-									setEditPatient({ ...editpatient, age: e.target.value })
-								}
-								disabled={patient.approved}
-							/>
-						</div>
+                <div style={styles.patientActions}>
+                  {!patient.approved && (
+                    <button
+                      style={styles.primaryButton}
+                      onClick={() => document.getElementById('edit-form')?.scrollIntoView({ behavior: 'smooth' })}
+                      onMouseOver={(e) => Object.assign(e.target.style, styles.primaryButtonHover)}
+                      onMouseOut={(e) => Object.assign(e.target.style, styles.primaryButton)}
+                    >
+                      ✏️ Edit Profile
+                    </button>
+                  )}
+                  <button
+                    style={styles.secondaryButton}
+                    onClick={() => {
+                      dispatch(logout());
+                      navigate('/patient');
+                    }}
+                    onMouseOver={(e) => Object.assign(e.target.style, styles.secondaryButtonHover)}
+                    onMouseOut={(e) => Object.assign(e.target.style, styles.secondaryButton)}
+                  >
+                    🚪 Logout
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
 
-						<div className="pd-field">
-							<label className="pd-label" htmlFor="mobile">
-								Mobile
-							</label>
-							<input
-								id="mobile"
-								type="tel"
-								className="pd-input"
-								value={editpatient.mobile}
-								onChange={(e) =>
-									setEditPatient({ ...editpatient, mobile: e.target.value })
-								}
-								disabled={patient.approved}
-							/>
-						</div>
+          {/* Success/Error Messages */}
+          {success && (
+            <div style={{
+              backgroundColor: "#f0fdf4",
+              border: "1px solid #bbf7d0",
+              borderRadius: "8px",
+              padding: "1rem",
+              marginBottom: "1rem",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.75rem",
+            }}>
+              <span style={{ color: "#16a34a", fontSize: "20px" }}>✅</span>
+              <p style={{ fontSize: "0.875rem", color: "#166534", fontWeight: "500", margin: 0 }}>
+                {success}
+              </p>
+            </div>
+          )}
 
-						<div className="pd-field">
-							<label className="pd-label" htmlFor="sex">
-								Sex
-							</label>
-							<select
-								id="sex"
-								className="pd-input"
-								value={editpatient.sex || ""}
-								onChange={(e) =>
-									setEditPatient({ ...editpatient, sex: e.target.value })
-								}
-								disabled={patient.approved}
-							>
-								<option value="">Select</option>
-								<option value="Male">Male</option>
-								<option value="Female">Female</option>
-								<option value="Other">Other</option>
-							</select>
-						</div>
+          {error && (
+            <div style={styles.errorMessage}>
+              <span style={styles.errorIcon}>⚠️</span>
+              <p style={styles.errorText}>{error}</p>
+            </div>
+          )}
 
-						<div className="pd-field">
-							<label className="pd-label" htmlFor="relationshipstatus">
-								Relationship
-							</label>
-							<select
-								id="relationshipstatus"
-								className="pd-input"
-								value={editpatient.relationshipstatus || ""}
-								onChange={(e) =>
-									setEditPatient({
-										...editpatient,
-										relationshipstatus: e.target.value,
-									})
-								}
-								disabled={patient.approved}
-							>
-								<option value="">
-									{!patient.relationship
-										? "Select relationship"
-										: patient.relationship}
-								</option>
-								<option value="Single">Single</option>
-								<option value="Married">Married</option>
-							</select>
-						</div>
+          {/* Content Grid */}
+          <div style={styles.contentGrid} className="content-grid">
 
-						{/* Read-only blocks for long info */}
-						<div className="pd-field full">
-							<label className="pd-label">Disease</label>
-							<textarea
-								className="pd-textarea"
-								value={patient.disease || ""}
-								disabled
-							/>
-						</div>
+            {/* Personal Information Card */}
+            <div style={styles.infoCard}>
+              <div style={styles.cardHeader}>
+                <div style={{
+                  ...styles.cardIcon,
+                  backgroundColor: "#dbeafe",
+                  color: "#1d4ed8"
+                }}>
+                  👤
+                </div>
+                <h3 style={styles.cardTitle}>Personal Information</h3>
+              </div>
+              <div style={styles.cardContent} className="card-content">
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>
+                    <span style={{ color: "#059669" }}>📧</span>
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    value={editpatient.email}
+                    style={{ ...styles.formInput, ...styles.readOnlyField }}
+                    readOnly
+                  />
+                </div>
 
-						<div className="pd-field full">
-							<label className="pd-label">Medicines</label>
-							<textarea
-								className="pd-textarea"
-								value={patient.medicines || ""}
-								disabled={patient.approved}
-							/>
-						</div>
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>
+                    <span style={{ color: "#059669" }}>📱</span>
+                    Mobile Number
+                  </label>
+                  <input
+                    type="tel"
+                    value={editpatient.mobile}
+                    onChange={(e) => handleInputChange('mobile', e.target.value)}
+                    style={patient.approved ? { ...styles.formInput, ...styles.readOnlyField } : styles.formInput}
+                    disabled={patient.approved}
+                    placeholder="Enter mobile number"
+                  />
+                </div>
 
-						<div className="pd-field">
-							<label className="pd-label">Admission</label>
-							<div className="pd-read">{patient.admissiondate || "-"}</div>
-						</div>
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>
+                    <span style={{ color: "#059669" }}>⚤</span>
+                    Gender
+                  </label>
+                  <select
+                    value={editpatient.sex || ""}
+                    onChange={(e) => handleInputChange('sex', e.target.value)}
+                    style={patient.approved ? { ...styles.formSelect, ...styles.readOnlyField } : styles.formSelect}
+                    disabled={patient.approved}
+                  >
+                    <option value="">Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
 
-						<div className="pd-field">
-							<label className="pd-label">Discharge</label>
-							<div className="pd-read">{patient.dischargedate || "-"} </div>
-						</div>
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>
+                    <span style={{ color: "#059669" }}>💕</span>
+                    Relationship Status
+                  </label>
+                  <select
+                    value={editpatient.relationshipstatus || ""}
+                    onChange={(e) => handleInputChange('relationshipstatus', e.target.value)}
+                    style={patient.approved ? { ...styles.formSelect, ...styles.readOnlyField } : styles.formSelect}
+                    disabled={patient.approved}
+                  >
+                    <option value="">Select Status</option>
+                    <option value="Single">Single</option>
+                    <option value="Married">Married</option>
+                    <option value="Divorced">Divorced</option>
+                    <option value="Widowed">Widowed</option>
+                  </select>
+                </div>
+              </div>
+            </div>
 
-						<div className="pd-field full">
-							<label className="pd-label">Address</label>
-							<textarea
-								className="pd-textarea"
-								value={patient.address || ""}
-								disabled={patient.approved}
-							/>
-						</div>
+            {/* Medical Information Card */}
+            <div style={styles.infoCard}>
+              <div style={styles.cardHeader}>
+                <div style={{
+                  ...styles.cardIcon,
+                  backgroundColor: "#fef3c7",
+                  color: "#d97706"
+                }}>
+                  🏥
+                </div>
+                <h3 style={styles.cardTitle}>Medical Information</h3>
+              </div>
+              <div style={styles.cardContent} className="card-content">
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>
+                    <span style={{ color: "#dc2626" }}>🩺</span>
+                    Disease/Condition
+                  </label>
+                  <textarea
+                    value={patient.disease || ""}
+                    style={{ ...styles.formTextarea, ...styles.readOnlyField }}
+                    readOnly
+                    rows={3}
+                  />
+                </div>
 
-						<div className="pd-field">
-							<label className="pd-label">Aadhar</label>
-							<div className="pd-read">{patient.aadharno}</div>
-						</div>
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>
+                    <span style={{ color: "#059669" }}>💊</span>
+                    Prescribed Medicines
+                  </label>
+                  <textarea
+                    value={patient.medicines || ""}
+                    style={patient.approved ? { ...styles.formTextarea, ...styles.readOnlyField } : styles.formTextarea}
+                    disabled={patient.approved}
+                    rows={3}
+                    placeholder="List prescribed medicines"
+                  />
+                </div>
 
-						<div className="pd-field">
-							<label className="pd-label">PAN</label>
-							<div className="pd-read">{patient.panno}</div>
-						</div>
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>
+                    <span style={{ color: "#059669" }}>🏥</span>
+                    Hospital/Clinic
+                  </label>
+                  <input
+                    type="text"
+                    value={patient.hospitalname || patient.hospital || ""}
+                    style={{ ...styles.formInput, ...styles.readOnlyField }}
+                    readOnly
+                  />
+                </div>
 
-						<div className="pd-field">
-							<label className="pd-label">Emergency Contact</label>
-							<div className="pd-read">
-								{patient.emergencyContact || "-"} disabled={patient.approved}
-							</div>
-						</div>
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>
+                    <span style={{ color: "#059669" }}>👨‍⚕️</span>
+                    Doctor Name
+                  </label>
+                  <input
+                    type="text"
+                    value={patient.doctor || ""}
+                    style={{ ...styles.formInput, ...styles.readOnlyField }}
+                    readOnly
+                  />
+                </div>
+              </div>
+            </div>
 
-						<div className="pd-field">
-							<label className="pd-label">Zone</label>
-							<div className="pd-read">{patient.zone || "-"}</div>
-						</div>
+            {/* Medical History */}
+            <div style={styles.medicalHistory}>
+              <div style={styles.historyHeader}>
+                <div style={styles.historyIcon}>📋</div>
+                <h3 style={styles.historyTitle}>Medical History</h3>
+              </div>
+              <div style={styles.historyGrid} className="history-grid">
+                <div style={styles.historyItem}>
+                  <div style={styles.historyLabel}>Admission Date</div>
+                  <div style={styles.historyValue}>{formatDate(patient.admissiondate)}</div>
+                </div>
 
-						<div className="pd-field">
-							<label className="pd-label">Hospital</label>
-							<div className="pd-read">
-								{patient.hospitalname || patient.hospital || "-"}
-							</div>
-						</div>
-					</div>
+                <div style={styles.historyItem}>
+                  <div style={styles.historyLabel}>Discharge Date</div>
+                  <div style={styles.historyValue}>{formatDate(patient.dischargedate)}</div>
+                </div>
 
-					{/* Save button */}
-					{!patient.approved && (
-						<div className="pd-actionsBottom">
-							<button type="submit" className="pd-submit" disabled={loading}>
-								{loading ? "Saving…" : "Save Changes"}
-							</button>
-						</div>
-					)}
-				</form>
+                <div style={styles.historyItem}>
+                  <div style={styles.historyLabel}>Aadhar Number</div>
+                  <div style={styles.historyValue}>{patient.aadharno || 'Not provided'}</div>
+                </div>
 
-				<div className="pd-footer">
-					<div className="pd-approvedText">
-						Approved: {patient.approved ? "✅ Yes" : "❌ No"}
-					</div>
-				</div>
-			</div>
+                <div style={styles.historyItem}>
+                  <div style={styles.historyLabel}>PAN Number</div>
+                  <div style={styles.historyValue}>{patient.panno || 'Not provided'}</div>
+                </div>
 
-			{/* Internal CSS */}
-			<style>{`
-        /* Root and card */
-        .pd-root {
-          min-height: 100vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 24px;
-          background: linear-gradient(135deg, #e6f7ff 0%, #d9ecff 50%, #c7e0ff 100%);
-          font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-        }
-        .pd-card {
-          width: 100%;
-          max-width: 1100px;
-          background: #fff;
-          border-radius: 14px;
-          box-shadow: 0 10px 30px rgba(17, 24, 39, 0.08);
-          padding: 20px;
-          box-sizing: border-box;
-        }
-        .pd-heading {
-          font-size: 1.6rem;
-          text-align: center;
-          color: #0f172a;
-          margin-bottom: 12px;
-        }
+                <div style={styles.historyItem}>
+                  <div style={styles.historyLabel}>Emergency Contact</div>
+                  <div style={styles.historyValue}>{patient.emergencyContact || 'Not provided'}</div>
+                </div>
 
-        /* Top summary and image */
-        .pd-top {
-          display: flex;
-          gap: 18px;
-          align-items: center;
-          margin-bottom: 18px;
-          flex-wrap: wrap;
-        }
-        .pd-imageWrap {
-          width: 128px;
-          min-width: 128px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-        }
-        .pd-image {
-          width: 128px;
-          height: 128px;
-          border-radius: 50%;
-          object-fit: cover;
-          border: 4px solid #0ea5e9;
-          background: #f3f4f6;
-        }
-        .pd-fileLabel {
-          margin-top: 8px;
-          cursor: pointer;
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          padding: 6px 10px;
-          border-radius: 8px;
-          background: #eef2ff;
-          color: #3730a3;
-          font-weight: 600;
-          font-size: 0.875rem;
-        }
-        .pd-fileInput {
-          display: none;
-        }
-        .pd-fileText { font-size: 0.85rem; }
+                <div style={styles.historyItem}>
+                  <div style={styles.historyLabel}>Zone/Area</div>
+                  <div style={styles.historyValue}>{patient.zone || 'Not specified'}</div>
+                </div>
+              </div>
+            </div>
 
-        .pd-summary {
-          flex: 1;
-          min-width: 200px;
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-        .pd-name {
-          font-size: 1.1rem;
-          font-weight: 700;
-          color: #0b1220;
-        }
-        .pd-meta { color: #475569; display:flex; gap:10px; font-size:0.95rem; }
-        .pd-approved { margin-top: 8px; font-weight:700; }
-        .pd-approved.pd-yes { color: #16a34a; }
-        .pd-approved.pd-no { color: #dc2626; }
+            {/* Status Card */}
+            <div style={styles.statusCard}>
+              <div style={styles.statusHeader}>
+                <div style={{
+                  ...styles.statusIcon,
+                  backgroundColor: patient.approved ? "#f0fdf4" : "#fef3c7",
+                  color: patient.approved ? "#16a34a" : "#d97706"
+                }}>
+                  {patient.approved ? "✅" : "⏳"}
+                </div>
+                <h3 style={styles.statusTitle}>Application Status</h3>
+              </div>
 
-        .pd-actions { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
-        .pd-saveBtn, .pd-logout {
-          padding: 8px 12px;
-          border-radius: 10px;
-          border: none;
-          cursor: pointer;
-          font-weight: 700;
-        }
-        .pd-saveBtn { background: linear-gradient(90deg,#06b6d4,#0891b2); color:#fff;}
-        .pd-logout { background:#ef4444; color:#fff; }
+              <div style={{
+                ...styles.statusBadge,
+                ...(patient.approved ? styles.statusApproved : styles.statusPending)
+              }}>
+                {patient.approved ? "Approved" : "Pending Review"}
+              </div>
 
-        /* Form grid */
-        .pd-form { margin-top: 8px; }
-        .pd-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 12px;
-        }
-        .pd-field { display:flex; flex-direction:column; gap:6px; }
-        .pd-field.full { grid-column: 1 / -1; }
-        .pd-label { font-weight:600; color:#0f172a; font-size:0.9rem; }
-        .pd-input, .pd-textarea {
-          border: 1px solid #e6edf6;
-          background: #fff;
-          padding: 10px 12px;
-          border-radius: 8px;
-          font-size: 0.95rem;
-          color: #0b1220;
-        }
-        .pd-textarea { min-height: 84px; resize: vertical; }
-        .pd-read { padding: 10px 12px; border-radius:8px; background:#f8fafc; border:1px solid #eff6ff; color:#0b1220; }
+              <p style={{
+                fontSize: "0.875rem",
+                color: "#64748b",
+                margin: "1rem 0 0 0",
+                lineHeight: "1.5"
+              }}>
+                {patient.approved
+                  ? "Your application has been approved. Your profile is now read-only and you can apply for medicine donations."
+                  : "Your application is under review. Once approved, you'll be able to edit your profile and apply for medicine donations."
+                }
+              </p>
+            </div>
 
-        .pd-actionsBottom { display:flex; justify-content:flex-end; margin-top:12px; }
-        .pd-submit {
-          background: linear-gradient(90deg,#0ea5e9,#0891b2);
-          color: white;
-          border: none;
-          padding: 12px 18px;
-          border-radius: 10px;
-          cursor: pointer;
-          font-weight: 700;
-        }
-        .pd-submit[disabled] { opacity: 0.6; cursor: not-allowed; }
+            {/* Editable Form Section */}
+            {!patient.approved && (
+              <div style={styles.infoCard} id="edit-form">
+                <div style={styles.cardHeader}>
+                  <div style={{
+                    ...styles.cardIcon,
+                    backgroundColor: "#e0f2fe",
+                    color: "#0277bd"
+                  }}>
+                    ✏️
+                  </div>
+                  <h3 style={styles.cardTitle}>Edit Profile Information</h3>
+                </div>
 
-        .pd-footer { margin-top:14px; display:flex; justify-content:flex-end; color:#475569; font-weight:600; }
+                <form onSubmit={handleSubmit}>
+                  <div style={styles.cardContent} className="card-content">
+                    <div style={styles.formGroup}>
+                      <label style={styles.formLabel}>
+                        <span style={{ color: "#059669" }}>👤</span>
+                        Full Name
+                      </label>
+                      <input
+                        type="text"
+                        value={editpatient.name}
+                        onChange={(e) => handleInputChange('name', e.target.value)}
+                        style={styles.formInput}
+                        required
+                        placeholder="Enter full name"
+                      />
+                    </div>
 
-        /* Loading fallback */
-        .pd-loading { min-height:100vh; display:flex; align-items:center; justify-content:center; font-size:1.125rem; color:#0b1220; }
+                    <div style={styles.formGroup}>
+                      <label style={styles.formLabel}>
+                        <span style={{ color: "#059669" }}>🎂</span>
+                        Age
+                      </label>
+                      <input
+                        type="number"
+                        value={editpatient.age}
+                        onChange={(e) => handleInputChange('age', e.target.value)}
+                        style={styles.formInput}
+                        min="1"
+                        max="150"
+                        placeholder="Enter age"
+                      />
+                    </div>
 
-        /* Responsive breakpoints */
-        @media (min-width: 640px) {
-          .pd-grid { grid-template-columns: repeat(2, 1fr); }
-          .pd-field.full { grid-column: 1 / -1; }
-        }
-        @media (min-width: 980px) {
-          .pd-top { gap: 24px; }
-          .pd-card { padding: 28px; }
-          .pd-grid { grid-template-columns: repeat(3, 1fr); }
-          .pd-field.full { grid-column: 1 / -1; }
-        }
+                    <div style={styles.formGroup}>
+                      <label style={styles.formLabel}>
+                        <span style={{ color: "#059669" }}>🏠</span>
+                        Address
+                      </label>
+                      <textarea
+                        value={patient.address || ""}
+                        style={{ ...styles.formTextarea, ...styles.readOnlyField }}
+                        readOnly
+                        rows={3}
+                        placeholder="Address information"
+                      />
+                    </div>
 
-      `}</style>
-		</div>
-	);
+                    <div style={styles.formGroup}>
+                      <label style={styles.formLabel}>
+                        <span style={{ color: "#059669" }}>🖼️</span>
+                        Profile Picture
+                      </label>
+                      <div style={styles.fileUpload}>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileChange}
+                          style={styles.fileInput}
+                          id="profile-image"
+                        />
+                        <label
+                          htmlFor="profile-image"
+                          style={styles.fileLabel}
+                          onMouseOver={(e) => Object.assign(e.target.style, styles.fileLabelHover)}
+                          onMouseOut={(e) => Object.assign(e.target.style, styles.fileLabel)}
+                        >
+                          📎 Choose Image
+                        </label>
+                        {dpFile && (
+                          <span style={{
+                            marginLeft: "1rem",
+                            fontSize: "0.875rem",
+                            color: "#059669",
+                            fontWeight: "500"
+                          }}>
+                            ✓ {dpFile.name}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{
+                    marginTop: "2rem",
+                    paddingTop: "1rem",
+                    borderTop: "2px solid #f1f5f9",
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    gap: "1rem"
+                  }}>
+                    <button
+                      type="submit"
+                      disabled={saving}
+                      style={{
+                        ...styles.primaryButton,
+                        opacity: saving ? 0.6 : 1,
+                        cursor: saving ? 'not-allowed' : 'pointer'
+                      }}
+                      onMouseOver={(e) => {
+                        if (!saving) Object.assign(e.target.style, styles.primaryButtonHover);
+                      }}
+                      onMouseOut={(e) => {
+                        if (!saving) Object.assign(e.target.style, styles.primaryButton);
+                      }}
+                    >
+                      {saving ? (
+                        <>
+                          <div style={{
+                            width: "16px",
+                            height: "16px",
+                            border: "2px solid rgba(255, 255, 255, 0.3)",
+                            borderTop: "2px solid #ffffff",
+                            borderRadius: "50%",
+                            animation: "spin 1s linear infinite",
+                            display: "inline-block",
+                            marginRight: "0.5rem"
+                          }}></div>
+                          Saving...
+                        </>
+                      ) : (
+                        <>💾 Save Changes</>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+          </div>
+        </main>
+      </div>
+    </>
+  );
 }
 
 export default PatientDetails;

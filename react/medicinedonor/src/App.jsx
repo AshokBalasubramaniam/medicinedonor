@@ -41,7 +41,7 @@ function App() {
         <Route path="/Forgetpassword" element={<Forgetpassword />} />
         <Route path="/home" element={<Home />} />
        <Route path="/AdminPatientDetails/:id" element={<AdminPatientDetails />} />   
-       <Route path='/adminlogin' />
+       <Route path='/adminpage' element={<Adminpage />} />
       </Routes>
        <style>
       {`

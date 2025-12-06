@@ -97,53 +97,75 @@ function DonorLogin() {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: linear-gradient(180deg, #f6fbff 0%, #eef7ff 100%);
+          background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
           padding: 32px;
           font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+          position: relative;
+        }
+
+        .dl-root::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-image:
+            radial-gradient(circle at 20% 50%, rgba(16, 185, 129, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 40% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+          pointer-events: none;
         }
 
         .dl-card {
           width: 100%;
           max-width: 420px;
-          background: #ffffff;
-          border-radius: 14px;
-          box-shadow: 0 8px 30px rgba(16, 24, 40, 0.08);
-          padding: 28px;
+          background: rgba(255, 255, 255, 0.98);
+          backdrop-filter: blur(10px);
+          border-radius: 16px;
+          box-shadow: 0 12px 40px rgba(16, 24, 40, 0.12);
+          padding: 32px;
           box-sizing: border-box;
-          border: 1px solid rgba(20,40,80,0.04);
+          border: 1px solid rgba(255,255,255,0.2);
+          position: relative;
+          z-index: 1;
         }
 
         .dl-brand {
           display: flex;
           align-items: center;
-          gap: 12px;
-          margin-bottom: 18px;
+          gap: 16px;
+          margin-bottom: 24px;
+          text-align: center;
+          flex-direction: column;
         }
 
         .dl-logo {
-          width: 46px;
-          height: 46px;
-          background: linear-gradient(135deg,#4f46e5,#06b6d4);
-          border-radius: 10px;
+          width: 60px;
+          height: 60px;
+          background: linear-gradient(135deg, #10b981, #06b6d4);
+          border-radius: 16px;
           display: inline-flex;
           align-items: center;
           justify-content: center;
           color: white;
           font-weight: 700;
-          font-size: 18px;
-          box-shadow: 0 6px 18px rgba(79,70,229,0.12);
+          font-size: 24px;
+          box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
+          margin-bottom: 8px;
         }
 
         .dl-title {
-          font-size: 20px;
-          font-weight: 600;
+          font-size: 24px;
+          font-weight: 700;
           color: #0f172a;
+          margin-bottom: 4px;
         }
 
         .dl-sub {
-          font-size: 13px;
-          color: #475569;
-          margin-top: 4px;
+          font-size: 14px;
+          color: #64748b;
+          font-weight: 400;
         }
 
         .dl-form {
@@ -198,21 +220,47 @@ function DonorLogin() {
 
         .dl-submit {
           width: 100%;
-          height: 46px;
-          margin-top: 6px;
-          border-radius: 10px;
+          height: 48px;
+          margin-top: 8px;
+          border-radius: 12px;
           border: none;
           font-weight: 600;
-          font-size: 15px;
+          font-size: 16px;
           cursor: pointer;
-          background: linear-gradient(90deg, #4f46e5, #06b6d4);
+          background: linear-gradient(135deg, #10b981, #06b6d4);
           color: #fff;
-          box-shadow: 0 8px 24px rgba(6,182,212,0.12);
-          transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+          box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
+          transition: all 0.3s ease;
+          position: relative;
+          overflow: hidden;
         }
 
-        .dl-submit:active { transform: translateY(1px); }
-        .dl-submit[disabled] { opacity: 0.7; cursor: not-allowed; }
+        .dl-submit::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+          transition: left 0.5s;
+        }
+
+        .dl-submit:hover::before {
+          left: 100%;
+        }
+
+        .dl-submit:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 12px 32px rgba(16, 185, 129, 0.3);
+        }
+
+        .dl-submit:active { transform: translateY(0); }
+        .dl-submit[disabled] {
+          opacity: 0.7;
+          cursor: not-allowed;
+          transform: none;
+        }
 
         .dl-alt {
           margin-top: 14px;
@@ -256,10 +304,12 @@ function DonorLogin() {
 
       <div className="dl-card" role="region" aria-labelledby="donor-login-title">
         <div className="dl-brand">
-          <div className="dl-logo">D</div>
+          <div className="dl-logo">
+            <i className="fa-solid fa-hand-holding-heart"></i>
+          </div>
           <div>
-            <div className="dl-title" id="donor-login-title">Donor Login</div>
-            <div className="dl-sub">Sign in to access donor patient details</div>
+            <div className="dl-title" id="donor-login-title">Donor Portal</div>
+            <div className="dl-sub">Sign in to manage your medicine donations</div>
           </div>
         </div>
 
@@ -341,9 +391,19 @@ function DonorLogin() {
           </button>
 
           <div className="dl-alt">
-            New donor?{" "}
-            <a href="/donor-register" style={{ color: "#064e3b", fontWeight: 600 }}>
-              Create an account
+            New to our platform?{" "}
+            <a
+              href="/register"
+              style={{
+                color: "#10b981",
+                fontWeight: 600,
+                textDecoration: 'none',
+                transition: 'color 0.3s ease'
+              }}
+              onMouseEnter={(e) => e.target.style.color = '#059669'}
+              onMouseLeave={(e) => e.target.style.color = '#10b981'}
+            >
+              Join as a Donor
             </a>
           </div>
         </form>
